@@ -91,7 +91,7 @@ double expression_Eval(parser p, expression e)
                 // Se l'operatore è una funzione
                 else if(t->type == TOKEN_FUNCTION)
                 {
-                        double result;
+                        double result = 0.0;
                         /* Recupero l'oggetto function associato alla funzione in questione
                            (dovrebbe esistere per forza o non l'avremmo identificata come
                            funzione) */
