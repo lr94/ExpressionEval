@@ -1,0 +1,69 @@
+COSE DA FARE E BUG NOTI
+============================================
+
+Potrebbero esserci ancora dei bug nell'implementazione del compilatore per architettura i686 (x86_32)
+        File: src/arch/x86/linux_x86_32.c
+        
+Entrambi i compilatori (x86_32 e x86_64) supportano una lunghezza massima del codice generato definita
+in src/include/expreval_internal.h con la costante MAX_CODE_LEN. Al momento non viene effettuato alcun
+controllo sul superamento di questa soglia, che porterebbe direttamente a un buffer overflow.
+        File: src/arch/x86/linux_x86_32.c
+              src/arch/x86/linux_x86_64.c
+
+Il compilatore x86_64 inserisce nella tabella dei literals ("valori immediati") molteplici volte lo
+stesso valore, anche se era già stato inserito in precedenza (il che può allungare significativamente
+la lunghezza del codice generato, aumentando le probabilità di buffer overflow per lunghe espressioni).
+        File: src/arch/x86/linux_x86_64.c
+
+Il compilatore x86_32 (i686) non usa neanche la tabella dei literals e fa un rigiro particolare che
+sarebbe sicuramente migliorabile.
+        File: src/arch/x86/linux_x86_32.c
+        
+L'interprete per la valutazione delle espressioni in RPN usa uno stack di lunghezza massima prefissata
+definita in src/include/expreval_internal.h con la costante STACK_LEN. Al momento non viene effettuato alcun
+controllo sul superamento di questa soglia, che porterebbe direttamente a un buffer overflow.
+        File: src/eval.c
+
+Anche la parte del parser che si occupa di generare la versione RPN dell'espressione usa per gli operatori
+uno stack di lunghezza massima prefissata definita in src/include/expreval_internal.h con la costante
+STACK_LEN. Al momento non viene effettuato alcun controllo sul superamento di questa soglia, che porterebbe
+direttamente a un buffer overflow.
+        File: src/parser.c
+
+La memoria allocata per generare le funzioni direttamente richiamabili da codice C non viene mai liberata
+fino alla terminazione del programma. Non può essere liberata con una free perché non è stata allocata
+con una malloc: esiste la system call "munmap" che può essere usata per questo scopo ma necessiterebbe anche
+della lunghezza del blocco da liberare (che invece noi perdiamo subito dopo la compilazione)
+        File: src/arch/x86/linux_x86_32.c
+              src/arch/x86/linux_x86_64.c
+              src/jit_compiler.c
+
+In alcuni casi (molto rari, nell'ordine dell'uno su milioni) ci sono differenze tra i risultati forniti
+dall'espressione compilata dal compilatore GCC e quelli forniti dall'espressione interpretata o compilata
+con il compilatore JIT. L'entità delle differenze (la più grande della quale era nell'ordine del 3%) è
+tale da far pensare che difficilmente si tratti di errori imputabili ai differenti metodi di calcolo
+(FPU x387 vs. SSE2) o di problemi relativi all'imprecisione di macchina.
+
+        Esempio:     
+                     1+(0.35*cos(1/(pi*x))+sqrt(1+(-y+x)^2)+sqrt(1+(x
+                     -y)^2))^3-(2-cos(a))/(2+sin((x+y)/(max(1+x,1+y)+
+                     x^2+z^2)))-(a*256*cos(x*y+4*z^2-a))%(102+24.3*si
+                     n(z^3-x*a+y))
+        Con valori:
+                     x   =  -47.870366
+                     y   =  -54.076750
+                     z   =  363.532088
+                     a   = -368.103993
+
+Il codice prodotto dal compilatore JIT è tutto meno che ottimizzato, ma per come è strutturato al momento
+il compilatore per adesso si può fare poco: dovrebbe prima produrre la sequenza di istruzioni in un formato
+simil-assembly in modo da poterla ancora modificare, poi analizzare il programma così ottenuto per introdurre
+le opportune ottimizzazioni e solo alla fine produrre il vero codice macchina. 
+
+PORT
+============================================
+Vedere quanto è complicato effettuare il port prima per Win32 e poi per Win64.
+In seguito potrebbe essere interessante provare a vedere se si riesce a fare il port per Linux su ARMv7
+(il che dovrebbe voler dire anche Android).
+Per OS X non dovrebbero esserci problemi (dovrebbe bastare l'implementazione per Linux senza particolari
+modifiche) perché le chiamate di sistema utilizzate sono POSIX e OS X usa come ABI System V (come Linux).

@@ -1,0 +1,71 @@
+Tipi:
+        parser                  Rappresenta l'oggetto interprete
+        expression              Rappresenta un'espressione già interpretata (pronta per essere valutata)
+        cfunction0              Rappresenta una funzione senza parametri
+        cfunction1              Rappresenta una funzione con un parametro
+        cfunction2              Rappresenta una funzione con 2 parametri
+        cfunction3              Rappresenta una funzione con 3 parametri
+        cfunction4              Rappresenta una funzione con 4 parametri
+
+Funzioni:
+       parser parser_New()
+               Inizializza un nuovo oggetto di tipo parser.
+       
+       void parser_Free(parser p)
+               Distrugge un oggetto di tipo parser.
+       
+       char *parser_GetError(parser p, int *errorcode, int *errorpos)
+               Restituisce una stringa con un messaggio d'errore se c'è stato un errore
+               durante il parsing dell'espressione.
+               Se non si sono verificati errori restiuisce NULL.
+               Se diversi da NULL errorcode e errorpos consentono di ottenere il codice
+               d'errore e la sua posizione (se definita).
+                
+       int parser_SetVariable(parser p, char *name, double value)
+               Imposta il valore di una variabile.
+               name indica il nome della variabile, value il valore
+               che si intende assegnare.
+               Restituisce 1 in caso di successom 0 altrimenti.
+               Può essere chiamata anche dopo la expression_Parse.
+
+       int parser_RegisterFunction(parser p, char *name, void *ptr, int num_args)
+               Permette di definire una funzione.
+                       name indica il nome della funzione
+                       ptr indica il puntatore alla funzione
+                       num_args indica il numero di argomenti
+               Restituisce 1 in caso di successo, 0 altrimenti.
+               Va SEMPRE chiamata PRIMA della expression_Parse.
+
+       int parser_GetVariable(parser p, char *name, double *value)
+               Permette di ottenere il valore di una variabile.
+               name è il nome della variabile, value è un puntatore ad
+               una variabile double in cui salvare il valore.
+               Restituisce 1 se la variabile è definita, 0 altrimenti.
+
+       expression expression_Parse(parser p, char *expressionstring)
+               Crea un oggetto di tipo expression a partire da una stringa
+               contenente un'espressione.
+               In caso di errore restituisce NULL.
+
+       void expression_Free(expression expr)
+               Distrugge un oggetto di tipo expression.
+               
+       double expression_Eval(parser p, expression e)
+               Valuta un'espressione interpretandola (niente compilazione).
+               dalla expression_Parse.
+               
+Esempio:
+       parser p = parser_New();
+       parser_RegisterFunction(p, "sin", sin, 1);
+       parser_SetVariable(p, "pi", 3.141592653);
+       expression ex = expression_Parse(p, "(1+sin(x*pi/4))/(1+x^2)");
+       parser_SetVariable(p, "x", 1.19);
+       if(ex == NULL)
+       {
+               fprintf(stderr, "Errore:\n\t%s\n", parser_GetError(p, NULL, NULL));
+               exit(1);
+       }
+       double result = expression_Eval(p, ex);
+       printf("Risultato:\n\t%f\n", result);
+       expression_Free(ex);
+       parser_Free(p);

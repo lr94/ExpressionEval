@@ -1,0 +1,72 @@
+Consente di effettuare una compilazione JIT (Just In Time) dell'espressione, che viene
+convertita in una funzione richiamabile direttamente dal programma C che accetta
+parametri double e restituisce un valore double.
+Perché questo tipo di compilazione possa funzionare è necessario che la CPU supporti
+il set di istruzioni SSE2, introdotto da Intel nel 2000 col Pentium 4.
+
+Tipi:
+        compiler                Rappresenta l'oggetto compilatore
+        cfunction0              Rappresenta un puntatore a una funzione senza parametri
+        cfunction1              Rappresenta un puntatore a una funzione con un parametro
+        cfunction2              Rappresenta un puntatore a una funzione con 2 parametri
+        cfunction3              Rappresenta un puntatore a una funzione con 3 parametri
+        cfunction4              Rappresenta un puntatore a una funzione con 4 parametri
+
+Funzioni:
+        compiler compiler_New()
+                Crea un nuovo oggetto compiler
+
+        void compiler_Free(compiler c)
+                Distrugge un oggetto di tipo compiler
+
+        char *compiler_GetError(compiler c, int *errorcode, int *errorpos)
+                Restituisce una stringa con un messaggio d'errore se c'è stato un errore
+                durante la compilazione dell'espressione.
+                Se non si sono verificati errori restiuisce NULL.
+                Se diversi da NULL errorcode e errorpos consentono di ottenere il codice
+                d'errore e la sua posizione nell'espressione (se ha avuto origine da uno
+                specifico token dell'espressione).
+
+        int compiler_SetConstant(compiler c, char *name, double value)
+                Permette di definire una costante.
+                        name indica il nome della costante
+                        double indica il valore che le si vuole attribuire
+                Restituisce 1 in caso di successo e 0 altrimenti (per ora solo
+                nel caso in cui il nome scelto sia già stato associato ad un 
+                parametro dell'espressione).
+                Ovviamente va chiamata PRIMA della compiler_CompileFunction.
+        
+        int compiler_RegisterFunction(compiler c, char *name, void *ptr, int num_args)
+                Permette di definire una funzione.
+                       name indica il nome della funzione
+                       ptr indica il puntatore alla funzione
+                       num_args indica il numero di argomenti.
+                Restituisce 1 in caso di successo, 0 altrimenti.     
+        
+        int compiler_MapArgument(compiler c, char *arg_name, int index)
+                Permette di associare una variabile dell'espressione ad un argomento
+                della funzione che si va a compilare.
+                        arg_name indica il nome della variabile
+                        index indica l'indice dell'argomento (partendo da 0)
+                Poiché il numero massimo di argomenti è 4, il massimo valore di index è 3.
+        
+        void *compiler_CompileFunction(compiler c, char *expr)
+                Effettua la compilazione di un'espressione passata come argomento in forma testuale.
+                Restituisce NULL in caso di errore, altrimenti viene restituito un puntatore alla funzione
+                (tipo cfunctionN, dove N è il numero di parametri)
+                
+Esempio:
+        compiler c = compiler_New();
+        compiler_RegisterFunction(c, "sin", sin, 1);
+        compiler_SetConstant(c, "pi", 3.141592653);
+        compiler_MapArgument(c, "x", 0);
+        cfunction1 cf = compiler_CompileFunction(c, "(1+sin(x*pi/4))/(1+x^2)");
+        if(cf == NULL)
+        {
+                fprintf(stderr, "Errore:\n\t%s\n", compiler_GetError(p, NULL, NULL));
+                exit(1);
+        }
+        compiler_Free(c);
+        
+        double result = cf(1.19);
+        printf("Risultato:\n\t%f\n", result);

@@ -1,0 +1,48 @@
+================================================NOTA================================================
+
+La libreria effettua dei controlli minimali sulla sintassi delle espressioni, peranto non 
+garantito che in caso di errori di sintassi essi siano correttamente rilevati e segnalati.
+
+==============================================OPERATORI=============================================
+
+Gli operatori supportati sono (in ordine di priorità decrescente):
+        ^
+        + -     [Intesi come operatori unari]
+        * / %
+        + -
+
+La libreria lavora sempre su valori in virgola mobile a doppia precisione (double, 64 bit).
+Per l'operatore %, definito solo per interi, opera troncando gli operandi a interi a 32 bit
+(attenzione ad overflow: non è detto che un valore double a 64 bit possa stare in un intero a 32):
+        14.87 % 11.26 = 14 % 11 = 3
+
+Non è supportata la moltiplicazione implicita:
+        5(3+x) NON è un modo valido per scrivere 5*(3+x)
+        
+==============================================PARENTESI=============================================
+
+Come per le espressioni in C (e in molti altri linguaggi) si usano solo le parentesi tonde "()".
+Sono obbligatorie quando si concatenano due operatori unari:
+        
+        --3             NON è un'espressione valida
+        -(-3)           È un'espressione valida
+        
+Non sono invece obbligatorie se si concatenano un operatore binario e uno unario:
+
+        2*-3            È un'espressione valida
+        2*(-3)          È un'espressione valida equivalente alla precedente
+
+===================================FUNZIONI, VARIABILI E COSTANTI===================================
+
+All'interno di un'espressione è possibile richiamare un numero arbitrario di funzioni (purché siano
+state adeguatamente definite) aventi al massimo 4 argomenti ciascuna.
+
+Nelle espressioni interpretate è possibile utilizzare un numero arbitrario di variabili.
+Nelle espressioni compilate è possibile utilizzare un numero arbitrario di costanti e al più 4 
+parametri.
+
+I nomi funzioni/variabili/costanti possono contenere lettere, numeri e "_", purché non inizino con
+un numero:
+        prova123  _prova _123      sono identificatori validi
+        123prova  $prova prov-a    NON sono identificatori validi   
+        
