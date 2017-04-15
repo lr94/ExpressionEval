@@ -387,14 +387,7 @@ static expression expression_parse_internal(parser p, token first)
                 q->next = o2;
                 q = o2;
                 queue_count++;
-        }
-        
-        /*
-        current_t = q_first;
-        while(current_t = current_t->next)
-                token_dbg(current_t);
-       // exit(0); */
-        
+        }      
         
         expr = malloc(sizeof(*expr));
         expr->first = q_first->next;

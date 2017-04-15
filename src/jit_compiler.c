@@ -203,15 +203,7 @@ void *compiler_CompileFunction(compiler c, char *expr)
         
         if(parser_GetError(c->p, NULL, NULL) != NULL)
                 return NULL;
-        
-        /* // Per analisi codice macchina generato con ndisasm
-        FILE *fp = fopen("compiled.bin", "wb");
-        int s;
-        char *compiled = compile_function_internal(c, e->first, &s);
-        for(int j = 0; j < s; j++)
-                fprintf(fp, "%c", compiled[j]);
-        fclose(fp);   */
-        
+
         code = compile_function_internal(c, e->first, NULL);
         expression_Free(e);
         
