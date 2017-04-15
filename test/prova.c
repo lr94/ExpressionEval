@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
         compiler_RegisterFunction(c, "pow", pow, 2);
 
         // Magia!
-        cfunction1 cf = compiler_CompileFunction(c,  "1/(2+cos(x))");
+        cfunction1 cf = compiler_CompileFunction(c, "1/(2+cos(x))");
         double result = cf(3.4);
         
         

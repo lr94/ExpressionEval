@@ -39,8 +39,7 @@ int main(int argc, char *argv[])
         compiler_RegisterFunction(c, "cos", cos, 1);
         compiler_RegisterFunction(c, "pow", pow, 2);
         compiler_RegisterFunction(c, "max", maxd, 2);
-        // 1+sin(pi-max(2.0,pi^2))*sqrt(3) causa crash. Se si sostituisce pi^2 con pi funziona <- NON PIÙ, almeno sui 64 bit
-        // sin(pi^2)*3 causa crash <- NON PIÙ, almeno sui 64 bit
+
         cfunction2 cf = compiler_CompileFunction(c,  buf);
         
         char *errstr = compiler_GetError(c, NULL, NULL);
