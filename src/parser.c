@@ -22,6 +22,7 @@ parser parser_New()
         p->errorpos = -1;
         p->first_var = NULL;
         p->first_function = NULL;
+        
         return p;
 }
 
