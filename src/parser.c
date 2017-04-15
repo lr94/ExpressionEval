@@ -68,6 +68,7 @@ int parser_SetError(parser p, int errorcode, token t)
                         else
                                 sprintf(p->errorstr, "Unknown error.");
         }
+        
         return errorcode;
 }
 
@@ -111,6 +112,7 @@ static variable variable_New(char *name, double value)
         v->name = strdup(name);
         v->value = value;
         v->next = NULL;
+        
         return v;
 }
 
@@ -227,6 +229,7 @@ static int treat_tokens(parser p, token first)
                 }
                 latest = t;
         } while((t = t->next) != NULL);
+        
         return 0;
 }
 
@@ -241,6 +244,7 @@ token token_clone(token t)
         c->next = NULL;
         if(t->text != NULL)
                 c->text = strdup(t->text);
+                
         return c;
 }
 
@@ -397,6 +401,7 @@ static expression expression_parse_internal(parser p, token first)
         expr->num_tokens = queue_count;
         expr->num_vars = var_count;
         token_Free(q_first, 0);
+        
         return expr;
 }
 
@@ -429,6 +434,7 @@ int parser_GetVariable(parser p, char *name, double *value)
                 }
                 current_var = current_var->next;
         }
+        
         return 0;
 }
 
@@ -462,6 +468,7 @@ int parser_SetVariable(parser p, char *name, double value)
         new_var = variable_New(name, value);
         new_var->next = p->first_var;
         p->first_var = new_var;
+        
         return 1;
 }
 
@@ -478,6 +485,7 @@ function parser_GetFunction(parser p, char *name)
                         return current_fun;
                 current_fun = current_fun->next;
         }
+        
         return NULL;
 }
 
