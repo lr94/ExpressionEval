@@ -1,9 +1,10 @@
-LIBEXPREVAL 0.8.5 (15 Ottobre 2016)
+# LibExpreval 0.8.5 (15 Ottobre 2016)
 
-# Compatibilità
+## Compatibilità
 
 La libreria al momento è compatibile (almeno per le funzionalità relative alla compilazione)
 solo con Linux su architetture x86_64 e i686 (x86_32).
+
 È inoltre necessario il set di istruzioni SSE2, che dovrebbe essere presente su tutti i
 processori Intel prodotti a partire dal Pentium 4. In ogni caso la libreria ne verifica la
 presenza in fase di compilazione delle espressioni.
@@ -12,42 +13,43 @@ presenza in fase di compilazione delle espressioni.
 
 Per generare il makefile:
 
-        `$ ./configure.sh`
+        $ ./configure.sh
 
 Per generare il makefile in modalità debug (aggiunge -g in fase di compilazione):
 
-        `$ ./configure.sh --debug`
+        $ ./configure.sh --debug
 
 Una volta generato il makefile, per compilare tutto (libreria ed esempi):
 
-        `$ make`
+        $ make
 
 Per compilare solo la libreria:
 
-        `$ make library`
+        $ make library
 
 Per installare la libreria sul sistema:
 
-        `# make install`
+        # make install
         
 Per compilare e installare sul sistema la libreria come shared library:
 
-        ```
         $ make cleanall                 # Da eseguire sempre se in precedenza era stata compilata
                                         # la versione statica della libreria
 
         $ ./configure.sh --shared
         $ make library
         # make install
-        ```
 
 Per disinstallare la libreria dal sistema:
+
         # make uninstall
 
 Per cancellare tutti i file oggetto:
+
         $ make clean
 
 Per cancellare tutti i file generati in fase di compilazione (e il makefile)
+
         $ make cleanall
 
 # Modifiche e prove
