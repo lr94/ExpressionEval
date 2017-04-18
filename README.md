@@ -11,27 +11,35 @@ presenza in fase di compilazione delle espressioni.
 # Configurazione e compilazione
 
 Per generare il makefile:
+
         `$ ./configure.sh`
 
 Per generare il makefile in modalità debug (aggiunge -g in fase di compilazione):
-        $ ./configure.sh --debug
+
+        `$ ./configure.sh --debug`
 
 Una volta generato il makefile, per compilare tutto (libreria ed esempi):
-        $ make
+
+        `$ make`
 
 Per compilare solo la libreria:
-        $ make library
+
+        `$ make library`
 
 Per installare la libreria sul sistema:
-        # make install
+
+        `# make install`
         
 Per compilare e installare sul sistema la libreria come shared library:
+
+        ```
         $ make cleanall                 # Da eseguire sempre se in precedenza era stata compilata
                                         # la versione statica della libreria
 
         $ ./configure.sh --shared
         $ make library
         # make install
+        ```
 
 Per disinstallare la libreria dal sistema:
         # make uninstall
