@@ -25,7 +25,7 @@ SOFTWARE.
 #ifndef EXPREVAL_H
 #define EXPREVAL_H
 
-#define LIBEXPREVAL_V   "0.8.5"
+#define LIBEXPREVAL_V   "0.8.6"
 
 enum {  
         ERROR_STACKOVERFLOW = 1,                // Errore di superamento dei limiti dello stack

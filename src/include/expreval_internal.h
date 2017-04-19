@@ -30,7 +30,7 @@ SOFTWARE.
 #define MAX_LITERALS_N  384                     // Numero massimo di valori literals (anche uguali tra loro) presenti in un'espressione (ha effetto solo su x86_64)
 
 
-#define LIBEXPREVAL_V   "0.8.5"
+#define LIBEXPREVAL_V   "0.8.6"
 /*
         La tabella seguende (composta da un'enumerazione e 3 array) definisce tutte le informazioni necessarie sugli
         operatori (simbolo, priorità, associatività e numero di operandi)
