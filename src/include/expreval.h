@@ -27,6 +27,10 @@ SOFTWARE.
 
 #define LIBEXPREVAL_V   "0.8.6"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum {  
         ERROR_STACKOVERFLOW = 1,                // Errore di superamento dei limiti dello stack
         ERROR_NOT_IMPLEMENTED,                  // Funzione non ancora implementata
@@ -66,4 +70,8 @@ int compiler_SetConstant(compiler c, char *name, double value);
 int compiler_RegisterFunction(compiler c, char *name, void *ptr, int num_args);
 int compiler_MapArgument(compiler c, char *arg_name, int index);
 void *compiler_CompileFunction(compiler c, char *expr);
+
+#ifdef __cplusplus
+}
+#endif
 #endif
