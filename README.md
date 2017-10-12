@@ -1,4 +1,4 @@
-# LibExpreval 0.8.8 (12 Ottobre 2018)
+# LibExpreval 0.8.8 (12 Ottobre 2017)
 
 ## Compatibilità
 
