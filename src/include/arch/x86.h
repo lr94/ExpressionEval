@@ -271,9 +271,18 @@ enum {_ESP_ = 4};
         Definisce nel ciclo fittizio una variabile intera tmp_val, inizializzandola col valore immediato richiesto.
         Inserisce l'opcode 0xc7 e un byte ModR/M (modalità 0, registro r), per poi inserire i 4 byte relativi al valore immediato
         richiesto.
+        
+        Usa due opcode diversi: se il valore immediato sta in 32 bit usa l'opcode C7, altrimenti usa l'opcode B8
 */
-#define MOV_imm(r, v)             do { int tmp_val = ((long)v); _64PREFIX; code[i++] = 0xc7; \
-                                        MODRM(0, r); memcpy(code + i, &tmp_val, sizeof(tmp_val)); i+=sizeof(tmp_val); } while(0)
+#define MOV_imm(r, v)             do {  long tmp_val = ((long)v); \
+                                        _64PREFIX; \
+                                        if(tmp_val >> 32) { \
+                                        code[i++] = 0xb8 + r - 24; \
+                                        memcpy(code + i, &tmp_val, sizeof(tmp_val)); i+=sizeof(tmp_val); \
+                                       } else { \
+										int tmp_val_i = (int)tmp_val; code[i++] = 0xc7; \
+                                        MODRM(0, r); memcpy(code + i, &tmp_val_i, sizeof(tmp_val_i)); i+=sizeof(tmp_val_i); \
+                                       } } while(0)
 
 // CALL che vuole come operando un registro contenente l'indirizzo della procedura da chiamare
 #define CALL(r)                   do { code[i++] = 0xff; MODRM(2, r); } while(0)
