@@ -38,7 +38,7 @@ echo -e "AS = $as\n" >> Makefile
 
 echo -e "ECHO = $(which echo)\n" >> Makefile
 # Flags per GCC (usati nella compilazione della libreria e degli esempi)
-cflags="-I./src/include/ $cflags"
+cflags="-I./include/ $cflags"
 if [[ $* == *--debug* ]] ; then
         cflags="$cflags -g"
 fi
@@ -80,7 +80,7 @@ if [[ $* == *--shared* ]] ; then
         # Primo target: map.sym, lista di tutte le funzioni da esportare nella libreria shared, creata a partire da expreval.h
         echo -e "map.sym: \$(HEADERS)" >> Makefile
         echo -e "\t@\$(ECHO) -e \"{\\\\n\\\\tglobal:\" > map.sym" >> Makefile
-        echo -e "\t@awk -F'[ (]' '(/.+\(.*\);/ && !match(\$\$1, /typedef/)){sub(\"*\",\"\",\$\$2);print \"\\\\t\\\\t\"\$\$2\";\";}' src/include/expreval.h >> map.sym" >> Makefile
+        echo -e "\t@awk -F'[ (]' '(/.+\(.*\);/ && !match(\$\$1, /typedef/)){sub(\"*\",\"\",\$\$2);print \"\\\\t\\\\t\"\$\$2\";\";}' include/expreval.h >> map.sym" >> Makefile
         echo -e "\t@\$(ECHO) -e \"\\\\tlocal:\\\\n\\\\t\\\\t*;\\\\n};\" >> map.sym\n" >> Makefile
         # Secondo target (dipendente anche da map.sym)
         echo -e "library: \$(DIRS) map.sym \$(OBJS_C) \$(OBJS_ASM)" >> Makefile
@@ -98,7 +98,7 @@ else
 fi
 # Copia dei .h (rientra nel target "library" in ogni caso)
 echo -e "\t@\$(ECHO) -e \"CP\\\\tusr/include/expreval.h\"" >> Makefile
-echo -e "\t@cp src/include/expreval.h usr/include/expreval.h" >> Makefile
+echo -e "\t@cp include/expreval.h usr/include/expreval.h" >> Makefile
 echo "" >> Makefile
 
 # Target esempi: dipendono da library e dalla lista di file eseguibili
