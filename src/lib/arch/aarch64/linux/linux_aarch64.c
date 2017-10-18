@@ -40,3 +40,11 @@ static void *create_executable_code_aarch64_linux(const char *machine_code, int 
 
         return mem;
 }
+
+/*
+        Verifica il supporto del sistema corrente
+*/
+int check_system_support(compiler c)
+{
+        return 1;
+}
