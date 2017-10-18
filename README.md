@@ -11,76 +11,45 @@ presenza in fase di compilazione delle espressioni.
 
 ## Configurazione e compilazione
 
-Per generare il makefile:
+Per compilare e installare la libreria statica sul sistema
 
-        $ ./configure.sh
-
-Per generare il makefile in modalità debug (aggiunge -g in fase di compilazione):
-
-        $ ./configure.sh --debug
-
-Una volta generato il makefile, per compilare tutto (libreria ed esempi):
-
+        $ ./configure
         $ make
-
-Per compilare solo la libreria:
-
-        $ make library
-
-Per installare la libreria sul sistema:
-
         # make install
-        
-Per compilare e installare sul sistema la libreria come shared library:
 
-        $ make cleanall                 # Da eseguire sempre se in precedenza era stata compilata
-                                        # la versione statica della libreria
+Per compilare e installare sul sistema la libreria anche come shared library:
 
-        $ ./configure.sh --shared
-        $ make library
+        $ ./configure --enable-shared
+        $ make
         # make install
 
 Per disinstallare la libreria dal sistema:
 
         # make uninstall
 
-Per cancellare tutti i file oggetto:
-
-        $ make clean
-
 Per cancellare tutti i file generati in fase di compilazione (e il makefile)
 
-        $ make cleanall
-
-## Modifiche e prove
-
-Se si vogliono effettuare delle prove è sufficiente creare i file C all'interno di "test",
-eseguire nuovamente ./configure.sh e poi eseguire make. Gli esempi saranno compilati in "bin".
-Se si effettuano modifiche al sorgente la procedura è analoga, ma prima di ./configure.sh
-è opportuno eseguire make cleanall
+        $ make distclean
 
 ## Libreria shared o static
 
 Di default viene generata una libreria statica (static library): i due file necessari al suo
 utilizzo sono
 
-        ./usr/lib/libexpreval.a
-        ./usr/lib/include/expreval.h
-        
+        libexpreval.a
+        include/expreval.h
+
 È tuttavia possibile generare una libreria condivisa (shared library) generando nuovamente il
 makefile:
 
-        $ ./configure.sh --shared
+        $ ./configure --enable-shared
 
 In tal caso i file generati dalla compilazione della libreria sono
 
-        ./usr/lib/libexpreval.so
-        ./usr/lib/include/expreval.h
+        libexpreval.a
+        libexpreval.so
 
-(questi file vengono copiati nell'opportuna posizione /usr/lib/ in fase di installazione)
-
-Se si compila la libreria come condivisa è necessario installarla prima di poter eseguire
-qualsiasi programma (compresi gli esempi) che ne fa utilizzo.
+(questi file vengono copiati nell'opportuna posizione /usr/lib/ in fase di installazione; il prefisso /usr può essere modificato mediante l'opzione --prefix di configure)
 
 ## Uso della libreria installata
 
