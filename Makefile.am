@@ -30,6 +30,10 @@ src/lib/arch/x86_64/cpuid.o:
 	$(AS) -f elf64 src/lib/arch/@ARCH@/cpuid.asm -o src/lib/arch/@ARCH@/cpuid.o
 endif
 
+if ARCH_AARCH64
+libexpreval_a_SOURCES += src/lib/arch/@ARCH@/@OS@/linux_aarch64.c
+endif
+
 # Shared library
 if MAKE_SHARED_LIBRARY
 shared_library: libexpreval.a map.sym

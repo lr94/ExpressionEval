@@ -58,7 +58,7 @@ AC_SUBST(ARCH, $arch)
 
 # Supported architectures
 
-if ! echo "i686 x86_64" | $GREP -w $arch > /dev/null; then
+if ! echo "i686 x86_64 aarch64" | $GREP -w $arch > /dev/null; then
 	AC_MSG_ERROR([Architecture $arch is not supported])
 fi;
 
@@ -73,6 +73,7 @@ fi;
 
 AM_CONDITIONAL(ARCH_i686, test "$arch" = "i686")
 AM_CONDITIONAL(ARCH_x86_64, test "$arch" = "x86_64")
+AM_CONDITIONAL(ARCH_AARCH64, test "$arch" = "aarch64")
 
 AC_OUTPUT(Makefile)
 dnl Anna
