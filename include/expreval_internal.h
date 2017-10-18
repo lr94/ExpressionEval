@@ -44,7 +44,7 @@ static const int op_args[] =           {2,      2,      2,      2,      2,      
 
 /* Cose tokenizer.c */
 
-enum {  /* Usati in tokenizer.c */  
+enum {  /* Usati in tokenizer.c */
         TOKEN_UNDEFINED,                        // Il tipo del token non è noto / non è definito (per esempio per token fittizio di inizio linked list)
         TOKEN_NUMBER,                           // Il token rappresenta un numero
         TOKEN_OPERATOR,                         // Il token rappresenta un operatore
@@ -60,7 +60,7 @@ struct _token {
         int position;                           // Posizione nell'espressione del primo carattere del token
         int length;                             // Numero di caratteri che compongon il token
         token next;                             // Token successivo nella linked list
-        
+
         /* Questi usati dopo la creazione dei token, in fase di parsing */
         double number_value;                    // Valore numerico del token (se type == TOKEN_NUMBER)
         int op;                                 // Identificativo (da enumerazione sopra) dell'operatore (se type == TOKEN_OPERATOR)
@@ -73,7 +73,7 @@ int is_valid_identifier(char *str);
 
 /* Cose parser.c */
 
-enum {  
+enum {
         ERROR_STACKOVERFLOW = 1,                // Errore di superamento dei limiti dello stack
         ERROR_NOT_IMPLEMENTED,                  // Funzione non ancora implementata
         ERROR_INVALID_NUMBER,                   // Valore numerico non valido (es 3.5.6 viene identificato come token numerico da tokenizer() ma non è valido)
@@ -153,9 +153,4 @@ char *compiler_GetError(compiler c, int *errorcode, int *errorpos);
 int compiler_SetError(compiler c, int errorcode, token t);
 void *compiler_CompileFunction(compiler c, char *expr);
 int compiler_GetArgumentIndex(compiler c, char *arg_name);
-
-// Controllo che stiamo compilando per x86_32 o x86_64
-#if (!__x86_64__) && (!__i386__)
-        #error Unsupported architecture or compiler
-#endif
 #endif
