@@ -9,7 +9,8 @@ void *compile_function_internal(compiler c, token first_token, int *size)
 {
     unsigned char code[MAX_CODE_LEN];
 
-    unsigned char tmp[] = {0x1e, 0x60, 0x28, 0x00, 0xd6, 0x5f, 0x03, 0xc0};
+    // f(x) = x * 2
+    unsigned char tmp[] = {0x00, 0x28, 0x60, 0x1e, 0xc0, 0x03, 0x5f, 0xd6};
     int n = 8;
 
     memcpy(code, tmp, n);
