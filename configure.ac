@@ -1,6 +1,6 @@
 AC_INIT(libexpreval, version-0.1)
 AM_INIT_AUTOMAKE([subdir-objects])
-
+AC_PREFIX_DEFAULT(/usr)
 AC_PROG_RANLIB
 
 dnl AC_MSG_NOTICE([Hello, world.])
