@@ -33,12 +33,12 @@ endif
 # Shared library
 if MAKE_SHARED_LIBRARY
 shared_library: libexpreval.a map.sym
-	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -fPIC -Wl,--version-script=map.sym -shared $(libexpreval_a_LIBADD) $$(echo $(libexpreval_a_SOURCES) | sed "s/\.c/.o/g") -o libexpreval.@SHARED_EXTENSION@
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -fPIC -Wl,--version-script=map.sym -shared $(libexpreval_a_LIBADD) $$(echo $(libexpreval_a_SOURCES) | $(SED) "s/\.c/.o/g") -o libexpreval.@SHARED_EXTENSION@
 	rm map.sym
 
 install-exec-local: libexpreval.@SHARED_EXTENSION@
 	cp libexpreval.@SHARED_EXTENSION@ ${libdir}
-	
+
 uninstall-local:
 	rm ${libdir}/libexpreval.@SHARED_EXTENSION@
 
@@ -46,7 +46,7 @@ map.sym: include/expreval.h
 	echo -e "{\n\tglobal:" > map.sym
 	$(AWK) -F'[ (]' '(/.+\(.*\);/ && !match($$1, /typedef/)){sub("*","",$$2);print "\t\t"$$2";";}' include/expreval.h >> map.sym
 	echo -e "\tlocal:\n\t\t*;\n};" >> map.sym
-	
+
 else
 shared_library:
 endif

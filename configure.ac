@@ -16,6 +16,7 @@ AC_ARG_ENABLE([shared],
 AM_CONDITIONAL(MAKE_SHARED_LIBRARY, test "$shared" = "yes")
 
 AC_PROG_AWK
+AC_PROG_SED
 AC_CHECK_FUNCS([pow])
 AC_CHECK_FUNCS([sqrt])
 AC_CHECK_FUNCS([strdup])

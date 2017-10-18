@@ -292,6 +292,7 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHARED_EXTENSION = @SHARED_EXTENSION@
 SHELL = @SHELL@
@@ -914,7 +915,7 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLIBRARIES \
 
 # Shared library
 @MAKE_SHARED_LIBRARY_TRUE@shared_library: libexpreval.a map.sym
-@MAKE_SHARED_LIBRARY_TRUE@	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -fPIC -Wl,--version-script=map.sym -shared $(libexpreval_a_LIBADD) $$(echo $(libexpreval_a_SOURCES) | sed "s/\.c/.o/g") -o libexpreval.@SHARED_EXTENSION@
+@MAKE_SHARED_LIBRARY_TRUE@	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -fPIC -Wl,--version-script=map.sym -shared $(libexpreval_a_LIBADD) $$(echo $(libexpreval_a_SOURCES) | $(SED) "s/\.c/.o/g") -o libexpreval.@SHARED_EXTENSION@
 @MAKE_SHARED_LIBRARY_TRUE@	rm map.sym
 
 @MAKE_SHARED_LIBRARY_TRUE@install-exec-local: libexpreval.@SHARED_EXTENSION@
