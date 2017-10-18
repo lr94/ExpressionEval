@@ -5,3 +5,8 @@ performance_test
 test_main
 prova
 Makefile
+config.log
+config.status
+.deps
+.dirstamp
+autom4te.cache
