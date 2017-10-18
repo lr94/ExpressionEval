@@ -10,3 +10,4 @@ config.status
 .deps
 .dirstamp
 autom4te.cache
+qemu_*
