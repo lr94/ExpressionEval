@@ -1,0 +1,7 @@
+*.o
+*.so
+*.a
+performance_test
+test_main
+prova
+Makefile
