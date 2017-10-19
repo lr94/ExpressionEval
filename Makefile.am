@@ -11,7 +11,7 @@ CLEANFILES = libexpreval.@SHARED_EXTENSION@ map.sym
 lib_LIBRARIES = libexpreval.a
 include_HEADERS = include/expreval.h
 
-libexpreval_a_SOURCES = src/lib/eval.c  src/lib/jit_compiler.c  src/lib/parser.c  src/lib/tokenizer.c
+libexpreval_a_SOURCES = src/lib/eval.c  src/lib/jit_compiler.c  src/lib/parser.c  src/lib/tokenizer.c src/lib/list.c
 
 
 if ARCH_i686
