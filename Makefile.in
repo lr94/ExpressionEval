@@ -147,7 +147,7 @@ libexpreval_a_AR = $(AR) $(ARFLAGS)
 @ARCH_i686_TRUE@libexpreval_a_DEPENDENCIES =  \
 @ARCH_i686_TRUE@	src/lib/arch/@ARCH@/cpuid.o
 am__libexpreval_a_SOURCES_DIST = src/lib/eval.c src/lib/jit_compiler.c \
-	src/lib/parser.c src/lib/tokenizer.c \
+	src/lib/parser.c src/lib/tokenizer.c src/lib/list.c \
 	src/lib/arch/@ARCH@/@OS@/linux_i686.c \
 	src/lib/arch/@ARCH@/@OS@/linux_x86_64.c \
 	src/lib/arch/@ARCH@/@OS@/linux_aarch64.c
@@ -158,8 +158,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ARCH_AARCH64_TRUE@am__objects_3 = src/lib/arch/@ARCH@/@OS@/linux_aarch64.$(OBJEXT)
 am_libexpreval_a_OBJECTS = src/lib/eval.$(OBJEXT) \
 	src/lib/jit_compiler.$(OBJEXT) src/lib/parser.$(OBJEXT) \
-	src/lib/tokenizer.$(OBJEXT) $(am__objects_1) $(am__objects_2) \
-	$(am__objects_3)
+	src/lib/tokenizer.$(OBJEXT) src/lib/list.$(OBJEXT) \
+	$(am__objects_1) $(am__objects_2) $(am__objects_3)
 libexpreval_a_OBJECTS = $(am_libexpreval_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_performance_test_OBJECTS = src/test/performance_test.$(OBJEXT)
@@ -354,8 +354,8 @@ CLEANFILES = libexpreval.@SHARED_EXTENSION@ map.sym $(am__append_2) \
 lib_LIBRARIES = libexpreval.a
 include_HEADERS = include/expreval.h
 libexpreval_a_SOURCES = src/lib/eval.c src/lib/jit_compiler.c \
-	src/lib/parser.c src/lib/tokenizer.c $(am__append_1) \
-	$(am__append_3) $(am__append_5)
+	src/lib/parser.c src/lib/tokenizer.c src/lib/list.c \
+	$(am__append_1) $(am__append_3) $(am__append_5)
 @ARCH_i686_TRUE@libexpreval_a_LIBADD = src/lib/arch/@ARCH@/cpuid.o
 @ARCH_x86_64_TRUE@libexpreval_a_LIBADD = src/lib/arch/@ARCH@/cpuid.o
 performance_test_SOURCES = src/test/performance_test.c
@@ -446,6 +446,8 @@ src/lib/parser.$(OBJEXT): src/lib/$(am__dirstamp) \
 	src/lib/$(DEPDIR)/$(am__dirstamp)
 src/lib/tokenizer.$(OBJEXT): src/lib/$(am__dirstamp) \
 	src/lib/$(DEPDIR)/$(am__dirstamp)
+src/lib/list.$(OBJEXT): src/lib/$(am__dirstamp) \
+	src/lib/$(DEPDIR)/$(am__dirstamp)
 src/lib/arch/@ARCH@/@OS@/$(am__dirstamp):
 	@$(MKDIR_P) src/lib/arch/@ARCH@/@OS@
 	@: > src/lib/arch/@ARCH@/@OS@/$(am__dirstamp)
@@ -505,6 +507,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/lib/$(DEPDIR)/eval.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/lib/$(DEPDIR)/jit_compiler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/lib/$(DEPDIR)/list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/lib/$(DEPDIR)/parser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/lib/$(DEPDIR)/tokenizer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/lib/arch/@ARCH@/@OS@/$(DEPDIR)/linux_aarch64.Po@am__quote@
