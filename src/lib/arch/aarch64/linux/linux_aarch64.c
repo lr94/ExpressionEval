@@ -15,6 +15,9 @@ void *compile_function_internal(compiler c, token first_token, int *size)
 
     memcpy(code, tmp, n);
 
+    if(size != NULL)
+        (*size) = n;
+
     return create_executable_code_aarch64_linux(code, n);
 }
 
