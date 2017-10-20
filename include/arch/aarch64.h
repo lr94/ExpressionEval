@@ -9,5 +9,8 @@ enum {D0 = 0, D1, D2, D3, D4, D5, D6, D7,
 #define FSUB(x,y,z)     code[i++] = 0x1e603800 | (x) | ((y) << 5) | ((z) << 16)
 #define FMUL(x,y,z)     code[i++] = 0x1e600800 | (x) | ((y) << 5) | ((z) << 16)
 #define FDIV(x,y,z)     code[i++] = 0x1e601800 | (x) | ((y) << 5) | ((z) << 16)
+
+#define FMOV(x,y)       code[i++] = 0x1e604000 | (x) | ((y) << 5)
+
 #define RET             code[i++] = 0xd65f03c0
 #endif
