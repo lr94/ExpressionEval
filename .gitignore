@@ -1,6 +1,7 @@
 *.o
 *.so
 *.a
+*.Po
 performance_test
 test_main
 prova
