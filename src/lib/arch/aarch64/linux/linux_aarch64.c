@@ -1,6 +1,8 @@
 #include <string.h>
+#include <stdint.h>
 #include <math.h>
 #include <sys/mman.h>
+#include "arch/aarch64.h"
 #include "expreval_internal.h"
 #include "list.h"
 
@@ -280,7 +282,8 @@ static void *create_executable_code_aarch64_linux(const char *machine_code, int 
 
 void *compile_function_internal(compiler c, token first_token, int *size)
 {
-    unsigned char code[MAX_CODE_LEN];
+    uint32_t code[MAX_CODE_LEN];
+    int i = 0;
 
     /*
     eil_expression_t *expr = compile_to_eil(c, first_token);
@@ -288,16 +291,14 @@ void *compile_function_internal(compiler c, token first_token, int *size)
     eil_expression_destroy(expr);
     */
 
-    // f(x) = x * 2
-    unsigned char tmp[] = {0x00, 0x28, 0x60, 0x1e, 0xc0, 0x03, 0x5f, 0xd6};
-    int n = 8;
-
-    memcpy(code, tmp, n);
+    // f(x) = x * x
+    FMUL(D0, D0, D0);       // fmul d0, d0, d0
+    RET;                    // ret
 
     if(size != NULL)
-        (*size) = n;
+        (*size) = i * 4;
 
-    return create_executable_code_aarch64_linux(code, n);
+    return create_executable_code_aarch64_linux((const char*)code, i * 4);
 }
 
 /*
