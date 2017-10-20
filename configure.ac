@@ -74,5 +74,8 @@ fi;
 AM_CONDITIONAL(ARCH_i686, test "$arch" = "i686")
 AM_CONDITIONAL(ARCH_x86_64, test "$arch" = "x86_64")
 
+AM_CONDITIONAL(OS_LINUX, test "$os" = "linux")
+AM_CONDITIONAL(OS_WIN, test "$os" = "win")
+
 AC_OUTPUT(Makefile)
 dnl Anna

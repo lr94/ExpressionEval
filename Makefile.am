@@ -23,7 +23,15 @@ src/lib/arch/i686/cpuid.o:
 endif
 
 if ARCH_x86_64
+# Linux support
+if OS_LINUX
 libexpreval_a_SOURCES += src/lib/arch/@ARCH@/@OS@/linux_x86_64.c
+endif
+# Windows support
+if OS_WIN
+libexpreval_a_SOURCES += src/lib/arch/@ARCH@/@OS@/win64.c
+endif
+
 libexpreval_a_LIBADD = src/lib/arch/@ARCH@/cpuid.o
 CLEANFILES += src/lib/arch/@ARCH@/cpuid.o
 src/lib/arch/x86_64/cpuid.o:

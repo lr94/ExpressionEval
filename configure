@@ -623,6 +623,10 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+OS_WIN_FALSE
+OS_WIN_TRUE
+OS_LINUX_FALSE
+OS_LINUX_TRUE
 ARCH_x86_64_FALSE
 ARCH_x86_64_TRUE
 ARCH_i686_FALSE
@@ -4653,6 +4657,23 @@ else
 fi
 
 
+ if test "$os" = "linux"; then
+  OS_LINUX_TRUE=
+  OS_LINUX_FALSE='#'
+else
+  OS_LINUX_TRUE='#'
+  OS_LINUX_FALSE=
+fi
+
+ if test "$os" = "win"; then
+  OS_WIN_TRUE=
+  OS_WIN_FALSE='#'
+else
+  OS_WIN_TRUE='#'
+  OS_WIN_FALSE=
+fi
+
+
 ac_config_files="$ac_config_files Makefile"
 
 cat >confcache <<\_ACEOF
@@ -4834,6 +4855,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_x86_64_TRUE}" && test -z "${ARCH_x86_64_FALSE}"; then
   as_fn_error $? "conditional \"ARCH_x86_64\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${OS_LINUX_TRUE}" && test -z "${OS_LINUX_FALSE}"; then
+  as_fn_error $? "conditional \"OS_LINUX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${OS_WIN_TRUE}" && test -z "${OS_WIN_FALSE}"; then
+  as_fn_error $? "conditional \"OS_WIN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
