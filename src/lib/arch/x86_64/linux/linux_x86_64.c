@@ -44,9 +44,9 @@ void *compile_function_internal(compiler c, token first_token, int *size)
         /* Queste 5 variabili sono tutte usate dalle macro di compilazione e non possono essere rinominate */
         unsigned char code[MAX_CODE_LEN], sib = 0;
         int i = 0, disp = 0, flag = 0;
-        
+
         token t;
-        
+
         /* Tabella dei valori literal: tutti i valori numerici inseriti direttamente
            nell'espressione vengono inseriti in questa tabella che verrà poi copiata
            nel codice (dopo la RET, così da non creare problemi). L'indirizzo della
@@ -61,18 +61,18 @@ void *compile_function_internal(compiler c, token first_token, int *size)
         */
         double literals[MAX_LITERALS_N]; int literals_i = 0;
         int data_address_position;
-        
+
         int stack_size = 0;
-        
+
         PUSH(EBP);                                                                // push rbp
         PUSH(EBX);                                                                // push rbx              ; Il registro rbx deve essere preservato
         SUB_imm(ESP, 0x8);                                                        // sub rsp, 0x8          ; Non ho capito bene perché ci voglia, ma a quanto pare
                                                                                   //                       ; senza crasha. Probabilmente è una qualche questione di
                                                                                   //                       ; allineamento dello stack (?)
-                                                                                  
+
         LEA(EBX, DISP(0x11223344));                                               // lea rbx, [0x11223344] ; 0x11223344 sarà cambiato dopo, quindi memorizzo la posizione
         data_address_position = i - 4;
-        
+
         t = first_token;
         do
         {
@@ -143,12 +143,12 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                                            che andranno sovrascritti */
                                         for(j = 0; j < c->arg_count; j++)
                                                 PUSH_Q(XMM(j));                   // pushq xmm{j}
-                                                              
+
                                         MOVQ(XMM0, XMM6);                         // movq xmm0, xmm6
                                         MOVQ(XMM1, XMM7);                         // movq xmm1, xmm7
                                         CALL_FUN(pow);                            // call pow
                                         MOVQ(XMM6, XMM0);                         // movq xmm6, xmm0
-                                                        
+
                                         /* Ripristino i parametri dell'espressione facendo POP
                                            (ovviamente in ordine inverso) */
                                         for(j = c->arg_count - 1; j >= 0; j--)
@@ -165,7 +165,7 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                            double quindi basta fare un bitwise xor un valore
                            avente tutti i bit a 0 e tranne quello più
                            significativo */
-                        unsigned long int v = 1UL << 63;
+                        unsigned long long int v = 1ULL << 63;
                         /* Operatore unario, deve esserci almeno un valore
                            nello stack */
                         if(stack_size < 1)
@@ -198,10 +198,10 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                            viene trattata come una variabile */
                         if(f == NULL)
                                 ERROR(ERROR_UNKNOWN, t);
-                        
+
                         if(stack_size < f->num_args)
                                 ERROR(ERROR_ARGS, t);
-                        
+
                         /* In questo momento xmm{0-3} contengono i parametri
                            dell'espressione, quindi non possiamo ancora toccare
                            xmm da 0 a 3!
@@ -209,7 +209,7 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                         for(j = f->num_args - 1; j >= 0; j--)
                                 POP_Q(XMM(j + 4));                                // popq xmm{j + 4}
                         stack_size -= f->num_args;
-                        
+
                         /* Salvo nello stack i parametri dell'espressione
                            che andranno sovrascritti e inserisco in xmm{0-3}
                            i parametri della funzione chiamata */
@@ -218,50 +218,50 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                                 PUSH_Q(XMM(j));                                   // pushq xmm{j}
                                 MOVQ(XMM(j), XMM(j + 4));                         // movq xmm{j}, xmm{j + 4}
                         }
-                        
+
                         /* Chiamo la funzione e salvo il risultato in XMM6 */
                         CALL_FUN(f->ptr);                                         // call {f->ptr}
                         MOVQ(XMM6, XMM0);                                         // movq xmm6, xmm0
-                        
+
                         /* Ripristino i parametri dell'espressione facendo POP
                            (ovviamente in ordine inverso) */
                         for(j = c->arg_count - 1; j >= 0; j--)
                                 POP_Q(XMM(j));                                    // popq xmm{j}
                         /* Push nello stack del risultato */
-                        PUSH_Q(XMM6);                                             // push xmm6        
+                        PUSH_Q(XMM6);                                             // push xmm6
                         stack_size++;
                 }
         } while((t = t->next) != NULL);
-        
+
         /* Lo stack dei valori alla fine deve contenere
            un solo numero. */
         if(stack_size != 1)
                 ERROR(ERROR_UNKNOWN, NULL);
         else
                 POP_Q(XMM0); /* Valore che viene restituito */                    // popq xmm0
-        
+
         ADD_imm(ESP, 0x8);                                                        // add rsp, 0x8
         POP(EBX);                                                                 // pop rbx
         POP(EBP);                                                                 // pop rbp
         RET;                                                                      // ret
-        
+
         /* A questo punto il codice della funzione è finito
            ed è già stata inserita la RET. Inserisco la tabella
            dei literals, contenente tutti i valori double costanti
            usati finora. */
-        
+
         int data_address = i - (data_address_position + 4);
         memcpy(code + data_address_position, &data_address, sizeof(data_address));
         memcpy(code + i, literals, literals_i * 8); i+=literals_i * 8;
-        
+
         if(size != NULL)
                 *size = i;
-        
+
         void *executable = create_executable_code_x86_linux(code, i);
-        
+
         if(executable == NULL)
                 ERROR(ERROR_SYSTEM, NULL);
-        
+
         return executable;
 }
 
@@ -326,7 +326,7 @@ int check_system_support(compiler c)
                 compiler_SetError(c, ERROR_UNSUPPORTED_SYS, NULL);
                 return 0;
         }
-        
+
         return 1;
 }
 #endif
