@@ -21,8 +21,22 @@ enum {X0 = 0, X1, X2, X3, X4, X5, X6, X7,
 #define FMOV(x,y)           code[i++] = 0x1e604000 | (x) | ((y) << 5)
 
 // x and y are registers (Xn|SP) and imm is an unsigned immediate value (0..4095)
+//      sub {x}, {y}, #{imm}
 #define SUB_imm(x,y,imm)    code[i++] = 0xd1000000 | (x) | ((y) << 5) | \
                             (((imm) & 0xfff) << 10)
+#define ADD_imm(x,y,imm)    code[i++] = 0x91000000 | (x) | ((y) << 5) | \
+                            (((imm) & 0xfff) << 10)
+
+/*
+    x is a floating poing 64 bit register (Dn), y is a general purpose register (Xn|SP)
+    and imm is an unsigned immediate value (0..32760) multiple of 8
+        str {x}, [{y}, #{imm}]
+        ldr {x}, [{y}, #{imm}]
+*/
+#define STR_fp_imm(x,y,imm) code[i++] = 0xfd000000 | (x) | ((y) << 5) | \
+                            ((((imm) >> 3) & 0xfff) << 10)
+#define LDR_fp_imm(x,y,imm) code[i++] = 0xfd400000 | (x) | ((y) << 5) | \
+                            ((((imm) >> 3) & 0xfff) << 10)
 
 #define RET                 code[i++] = 0xd65f03c0
 #endif
