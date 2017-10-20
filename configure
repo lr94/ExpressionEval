@@ -4573,7 +4573,7 @@ elif test "$arch" = "i586"; then
 fi;
 
 # Supported OSs
-if test "$os" = "mingw32"; then
+if test "$os" = "w64"; then
 	os="win"; # TODO win port
 	SHARED_EXTENSION="dll"
 
