@@ -39,6 +39,19 @@ enum {X0 = 0, X1, X2, X3, X4, X5, X6, X7,
                             ((((imm) >> 3) & 0xfff) << 10)
 
 /*
+    x is a double precision (64 bit) floating poing register (Dn),
+    lit is an offset (+-1 1MiB) relative to the address of this instruction.
+    It must be a multiple of 4.
+*/
+#define LDR_fp_lit(x,lit)  code[i++] = 0x5c000000 | (x) | ((((lit) >> 2) & 0x7ffff) << 5)
+
+/*
+    x is a 64 bit general purpose register, lit is an offset (+-1 1MiB) relative
+    to the address of this instruction. It must be a multiple of 4.
+*/
+#define LDR_lit(x,lit)     code[i++] = 0x58000000 | (x) | ((((lit) >> 2) & 0x7ffff) << 5)
+
+/*
     Branch with link to a register. Calls a subroutine at an address in a
     general purpose register (Xn|XZR)
         blr {x}
