@@ -38,5 +38,12 @@ enum {X0 = 0, X1, X2, X3, X4, X5, X6, X7,
 #define LDR_fp_imm(x,y,imm) code[i++] = 0xfd400000 | (x) | ((y) << 5) | \
                             ((((imm) >> 3) & 0xfff) << 10)
 
+/*
+    Branch with link to a register. Calls a subroutine at an address in a
+    general purpose register (Xn|XZR)
+        blr {x}
+*/
+#define BLR(x)              code[i++] = 0xd63f0000 | ((x) << 5)
+
 #define RET                 code[i++] = 0xd65f03c0
 #endif
