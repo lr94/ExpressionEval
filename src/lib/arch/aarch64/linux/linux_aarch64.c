@@ -291,8 +291,14 @@ void *compile_function_internal(compiler c, token first_token, int *size)
     eil_expression_destroy(expr);
     */
 
+    LDR_lit(X0, 8);
+    printf("%08x\n", code[0]);
+    i--;
+
     // f(x) = x * x
+    SUB_imm(SP, SP, 8);
     FMUL(D0, D0, D0);       // fmul d0, d0, d0
+    ADD_imm(SP, SP, 8);
     RET;                    // ret
 
     if(size != NULL)
