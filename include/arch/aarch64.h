@@ -17,5 +17,8 @@ enum {X0 = 0, X1, X2, X3, X4, X5, X6, X7,
 
 #define FMOV(x,y)           code[i++] = 0x1e604000 | (x) | ((y) << 5)
 
+#define SUB_imm(x,y,imm)    code[i++] = 0xd1000000 | (x) | ((y) << 5) | \
+                            (((imm) & 0xfff) << 10)
+
 #define RET                 code[i++] = 0xd65f03c0
 #endif
