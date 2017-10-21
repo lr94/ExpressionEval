@@ -319,7 +319,9 @@ void *compile_function_internal(compiler c, token first_token, int *size)
     // TODO check max_stack_size <= 4095
 
     int aarch64_curr_inst_index = 0; // Current instruction index
-    // Allocate space in the stack
+    // Allocate space in the stack. Note that SP must be 16-byte aligned when accessing memory
+    if(max_stack_size & 0xf)
+        max_stack_size += 0x10 - (max_stack_size & 0xf);
     // sub sp, sp, #{max_stack_size}
     SUB_imm(SP, SP, max_stack_size);
     aarch64_curr_inst_index++;
