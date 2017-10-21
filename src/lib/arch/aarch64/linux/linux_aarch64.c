@@ -30,6 +30,11 @@ union eil_operand
     void *mem;
     int imm;
 };
+union eil_literal
+{
+    double fp;
+    void *ptr;
+};
 typedef struct _eil_instruction
 {
     eil_opcode_t opcode;
@@ -56,8 +61,8 @@ eil_expression_t *compile_to_eil(compiler c, token first_token)
         if(t->type == TOKEN_NUMBER)
         {
             // Add the number to the list of literals
-            double *value = malloc(sizeof(double));
-            (*value) = t->number_value;
+            union eil_literal *value = malloc(sizeof(union eil_literal));
+            (*value).fp = t->number_value;
             list_Append(expression->literals, value);
             int literal_index = expression->literals->count - 1;
 
@@ -94,8 +99,8 @@ eil_expression_t *compile_to_eil(compiler c, token first_token)
             else if(parser_GetVariable(c->p, t->text, &constant_value))
             {
                 // Add the number to the list of literals
-                double *value = malloc(sizeof(double));
-                (*value) = constant_value;
+                union eil_literal *value = malloc(sizeof(union eil_literal));
+                (*value).fp = constant_value;
                 list_Append(expression->literals, value);
                 int literal_index = expression->literals->count - 1;
 
@@ -285,24 +290,139 @@ void *compile_function_internal(compiler c, token first_token, int *size)
     uint32_t code[MAX_CODE_LEN];
     int i = 0;
 
-    /*
     eil_expression_t *expr = compile_to_eil(c, first_token);
-    eil_expression_dump(expr);
-    eil_expression_destroy(expr);
-    */
+    // eil_expression_dump(expr);
 
-    LDR_lit(X0, 8);
-    printf("%08x\n", code[0]);
-    i--;
+    listnode_t *n;
+    int max_stack_size = 0, current_stack_size = 0;
+    int aarch64_inst_count = 0;
+    for(n = expr->instructions->first; n != NULL; n = n->next)
+    {
+        eil_instruction_t *current_instruction = n->ptr;
 
-    // f(x) = x * x
-    SUB_imm(SP, SP, 8);
-    FMUL(D0, D0, D0);       // fmul d0, d0, d0
-    ADD_imm(SP, SP, 8);
-    RET;                    // ret
+        switch (current_instruction->opcode)
+        {
+            case EIL_PUSH:
+                current_stack_size++;
+                if(current_stack_size > max_stack_size)
+                    max_stack_size = current_stack_size;
+                break;
+            case EIL_POP:
+                current_stack_size--;
+                break;
+        }
+        aarch64_inst_count++;
+    }
+    max_stack_size *= sizeof(double); // 64 bit per stack slot
+    aarch64_inst_count += 4; // alloca stack, pop risultato, libera, ret
+
+    // TODO check max_stack_size <= 4095
+
+    int aarch64_curr_inst_index = 0; // Current instruction index
+    // Allocate space in the stack
+    // sub sp, sp, #{max_stack_size}
+    SUB_imm(SP, SP, max_stack_size);
+    aarch64_curr_inst_index++;
+
+    int aarch64_virtual_sp = max_stack_size; // relative to real SP
+    for(n = expr->instructions->first; n != NULL; n = n->next)
+    {
+        eil_instruction_t *current_instruction = n->ptr;
+
+        switch(current_instruction->opcode)
+        {
+            case EIL_MOVLIT:
+                // ldr dN, LITERAL_POINTED_BY_OFFSET
+                LDR_fp_lit(current_instruction->op1.reg,
+                           (aarch64_inst_count
+                                - aarch64_curr_inst_index) * 4
+                            + current_instruction->op2.imm * 8);
+                aarch64_curr_inst_index++;
+                break;
+
+            case EIL_PUSH:
+                // str dN, [sp, #{aarch64_virtual_sp}]
+                aarch64_virtual_sp -= sizeof(double);
+                STR_fp_imm(current_instruction->op1.reg, SP, aarch64_virtual_sp);
+                aarch64_curr_inst_index++;
+                break;
+            case EIL_POP:
+                // ldr dN, [sp, #{aarch64_virtual_sp}]
+                LDR_fp_imm(current_instruction->op1.reg, SP, aarch64_virtual_sp);
+                aarch64_virtual_sp += sizeof(double);
+                aarch64_curr_inst_index++;
+                break;
+
+            case EIL_ADD:
+                FADD(current_instruction->op1.reg,
+                     current_instruction->op1.reg,
+                     current_instruction->op2.reg);
+                aarch64_curr_inst_index++;
+                break;
+            case EIL_SUB:
+                FSUB(current_instruction->op1.reg,
+                     current_instruction->op1.reg,
+                     current_instruction->op2.reg);
+                aarch64_curr_inst_index++;
+                break;
+            case EIL_MUL:
+                FMUL(current_instruction->op1.reg,
+                     current_instruction->op1.reg,
+                     current_instruction->op2.reg);
+                aarch64_curr_inst_index++;
+                break;
+            case EIL_DIV:
+                FDIV(current_instruction->op1.reg,
+                     current_instruction->op1.reg,
+                     current_instruction->op2.reg);
+                aarch64_curr_inst_index++;
+                break;
+
+            case EIL_NEG:
+                FNEG(current_instruction->op1.reg,
+                     current_instruction->op1.reg);
+                aarch64_curr_inst_index++;
+                break;
+        }
+    }
+
+    // Pop the result from the stack
+    // ldr d0, [sp, #{aarch64_virtual_sp}]
+    LDR_fp_imm(D0, SP, aarch64_virtual_sp);
+    aarch64_virtual_sp += sizeof(double);
+
+    // Free space
+    // add sp, sp, #{max_stack_size}
+    ADD_imm(SP, SP, max_stack_size);
+    // ret
+    RET;
+
+    // Copy literal values
+    for(n = expr->literals->first; n != NULL; n = n->next)
+    {
+        union eil_literal *l = n->ptr;
+        memcpy(code + i, l, sizeof(double)); // 8 bytes
+        i += 2;
+    }
 
     if(size != NULL)
         (*size) = i * 4;
+
+    eil_expression_destroy(expr);
+
+/*
+    // Dump
+    int j;
+    for(j = 0; j < i; j++)
+        printf("%08x\n", code[j]);
+    printf("\n");
+    // exit(0);
+    FILE *fp = fopen("test.bin", "wb");
+    char *cd = (char*)code;
+    for(j = 0; j < i * 4; j++)
+        fputc(cd[j], fp);
+    fclose(fp);
+*/
 
     return create_executable_code_aarch64_linux((const char*)code, i * 4);
 }
