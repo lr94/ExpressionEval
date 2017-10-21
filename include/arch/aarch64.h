@@ -18,6 +18,8 @@ enum {X0 = 0, X1, X2, X3, X4, X5, X6, X7,
 #define FMUL(x,y,z)         code[i++] = 0x1e600800 | (x) | ((y) << 5) | ((z) << 16)
 #define FDIV(x,y,z)         code[i++] = 0x1e601800 | (x) | ((y) << 5) | ((z) << 16)
 
+#define FNEG(x,y)           code[i++] = 0x1e614000 | (x) | ((y) << 5)
+
 #define FMOV(x,y)           code[i++] = 0x1e604000 | (x) | ((y) << 5)
 
 // x and y are registers (Xn|SP) and imm is an unsigned immediate value (0..4095)
