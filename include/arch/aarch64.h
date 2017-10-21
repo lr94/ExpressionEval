@@ -22,6 +22,12 @@ enum {X0 = 0, X1, X2, X3, X4, X5, X6, X7,
 
 #define FMOV(x,y)           code[i++] = 0x1e604000 | (x) | ((y) << 5)
 
+// x is a general purpose 64-bit register (Xn), y is a double precision floating point register (Dn)
+#define FCVTZS(x,y)         code[i++] = 0x9e780000 | (x) | ((y) << 5)
+
+// x is a double precision fp register (Dn) and y is a general purpose 64-bit register (Xn)
+#define SCVTF(x,y)          code[i++] = 0x9e620000 | (x) | ((y) << 5)
+
 // x and y are registers (Xn|SP) and imm is an unsigned immediate value (0..4095)
 //      sub {x}, {y}, #{imm}
 #define SUB_imm(x,y,imm)    code[i++] = 0xd1000000 | (x) | ((y) << 5) | \
