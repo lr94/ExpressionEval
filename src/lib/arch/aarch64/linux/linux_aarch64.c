@@ -193,7 +193,7 @@ eil_expression_t *compile_to_eil(compiler c, token first_token)
 
             switch (t->op)
             {
-                case OP_SUB:
+                case OP_NEG:
                     // POP REG_6
                     pop = malloc(sizeof(eil_instruction_t));
                     pop->opcode = EIL_POP;
