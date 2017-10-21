@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-        
+
         compiler c = compiler_New();
         compiler_SetConstant(c, "pi", 3.14159265358979);
         compiler_SetConstant(c, "phi", (1+sqrt(5.0))/2);
@@ -17,12 +17,11 @@ int main(int argc, char *argv[])
         compiler_RegisterFunction(c, "pow", pow, 2);
 
         // Magia!
-        cfunction1 cf = compiler_CompileFunction(c, "1/(2+cos(x))");
+        cfunction1 cf = compiler_CompileFunction(c, "1/(2+3*x)");
         double result = cf(3.4);
-        
-        
+
+
         printf("%f\n", result);
-        
+
         return EXIT_SUCCESS;
 }
-
