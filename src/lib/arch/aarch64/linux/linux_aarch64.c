@@ -20,6 +20,7 @@ typedef enum
     EIL_SUB,        // ...
     EIL_MUL,
     EIL_DIV,
+    EIL_MOD,
 
     EIL_NEG,        // Change the sign of a number; NEG REG_1
     EIL_CALL        // Call a function
@@ -173,6 +174,13 @@ eil_expression_t *compile_to_eil(compiler c, token first_token)
                     op->op2.reg = EIL_REG_7;
                     list_Append(expression->instructions, op);
                     break;
+                case OP_MOD:
+                    op = malloc(sizeof(eil_instruction_t));
+                    op->opcode = EIL_MOD;
+                    op->op1.reg = EIL_REG_6;
+                    op->op2.reg = EIL_REG_7;
+                    list_Append(expression->instructions, op);
+                    break;
                 default:
                     ERROR(ERROR_UNKNOWN, NULL); // TODO implement % and ^
             }
@@ -240,7 +248,7 @@ void eil_expression_dump(eil_expression_t *expression)
     {
         eil_instruction_t *instruction = n->ptr;
 
-        const char *vals[] = {"PUSH", "POP", "MOVLIT", "ADD", "SUB", "MUL", "DIV", "NEG", "CALL"};
+        const char *vals[] = {"PUSH", "POP", "MOVLIT", "ADD", "SUB", "MUL", "DIV", "MOD", "NEG", "CALL"};
         const char *regs[] = {"REG_0", "REG_1", "REG_2", "REG_3", "REG_4", "REG_5", "REG_6", "REG_7"};
 
         printf("\t%s %s", vals[instruction->opcode], regs[instruction->op1.reg]);
