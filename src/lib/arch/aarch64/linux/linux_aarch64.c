@@ -306,12 +306,16 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                 current_stack_size++;
                 if(current_stack_size > max_stack_size)
                     max_stack_size = current_stack_size;
+                aarch64_inst_count++;
                 break;
             case EIL_POP:
                 current_stack_size--;
+                aarch64_inst_count++;
+                break;
+            default:
+                aarch64_inst_count++;
                 break;
         }
-        aarch64_inst_count++;
     }
     max_stack_size *= sizeof(double); // 64 bit per stack slot
     aarch64_inst_count += 4; // alloca stack, pop risultato, libera, ret
