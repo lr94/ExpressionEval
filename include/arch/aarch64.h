@@ -31,6 +31,9 @@ enum {X0 = 0, X1, X2, X3, X4, X5, X6, X7,
 // x, y and z are general purpose 64-bit registers (Xn)
 #define SDIV(x,y,z)         code[i++] = 0x9ac00c00 | (x) | ((y) << 5) | ((z) << 16)
 
+#define MSUB(w,x,y,z)       code[i++] = 0x9b008000 | (w) | ((x) << 5) | ((z) << 10) | \
+                            ((y) << 16)
+
 // x and y are registers (Xn|SP) and imm is an unsigned immediate value (0..4095)
 //      sub {x}, {y}, #{imm}
 #define SUB_imm(x,y,imm)    code[i++] = 0xd1000000 | (x) | ((y) << 5) | \
