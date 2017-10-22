@@ -190,7 +190,7 @@ eil_expression_t *compile_to_eil(compiler c, token first_token)
                     list_Append(expression->instructions, op);
                     break;
                 default:
-                    ERROR(ERROR_UNKNOWN, NULL); // TODO implement ^
+                    ERROR(ERROR_UNKNOWN, NULL);
             }
 
             // PUSH REG_6
