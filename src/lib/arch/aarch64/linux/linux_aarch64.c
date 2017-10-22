@@ -20,6 +20,7 @@ typedef enum
     EIL_SUB,        // ...
     EIL_MUL,
     EIL_DIV,
+    EIL_POW,
     EIL_MOD,
 
     EIL_NEG,        // Change the sign of a number; NEG REG_1
@@ -174,6 +175,13 @@ eil_expression_t *compile_to_eil(compiler c, token first_token)
                     op->op2.reg = EIL_REG_7;
                     list_Append(expression->instructions, op);
                     break;
+                case OP_PWR:
+                    op = malloc(sizeof(eil_instruction_t));
+                    op->opcode = EIL_POW;
+                    op->op1.reg = EIL_REG_6;
+                    op->op2.reg = EIL_REG_7;
+                    list_Append(expression->instructions, op);
+                    break;
                 case OP_MOD:
                     op = malloc(sizeof(eil_instruction_t));
                     op->opcode = EIL_MOD;
@@ -267,7 +275,7 @@ void eil_expression_dump(eil_expression_t *expression)
     {
         eil_instruction_t *instruction = n->ptr;
 
-        const char *vals[] = {"PUSH", "POP", "MOVLIT", "ADD", "SUB", "MUL", "DIV", "MOD", "NEG", "CALL"};
+        const char *vals[] = {"PUSH", "POP", "MOVLIT", "ADD", "SUB", "MUL", "DIV", "POW", "MOD", "NEG", "CALL"};
         const char *regs[] = {"REG_0", "REG_1", "REG_2", "REG_3", "REG_4", "REG_5", "REG_6", "REG_7"};
 
         if(instruction->opcode == EIL_CALL)
@@ -282,6 +290,7 @@ void eil_expression_dump(eil_expression_t *expression)
                 case EIL_SUB:
                 case EIL_MUL:
                 case EIL_DIV:
+                case EIL_POW:
                 case EIL_MOD:
                     printf(" %s", regs[instruction->op2.reg]);
                     break;
@@ -555,7 +564,7 @@ void *compile_function_internal(compiler c, token first_token, int *size)
     // exit(0);
     // printf("cos: %p\nme:%p\n", cos, compile_function_internal);
     */
-    
+
     return create_executable_code_aarch64_linux((const char*)code, i * 4);
 }
 
