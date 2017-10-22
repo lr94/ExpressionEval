@@ -66,6 +66,26 @@ enum {X0 = 0, X1, X2, X3, X4, X5, X6, X7,
 #define LDR_lit(x,lit)     code[i++] = 0x58000000 | (x) | ((((lit) >> 2) & 0x7ffff) << 5)
 
 /*
+    Pre-index STP
+    x and y are general purpose 64-bit registers (Xn)
+    z is a general purpose register or the stack pointer (Xn|SP)
+    imm is a signed offset multiple of 8 (-512..504)
+        stp {x}, {y}, [{z}, #{imm}]!
+*/
+#define STP_pri(x,y,z,imm) code[i++] = 0xa9800000 | (x) | ((z) << 5) | ((y) << 10) | \
+                           ((((imm) >> 3) & 0x7f) << 15)
+
+/*
+    Post-index LDP
+    x and y are general purpose 64-bit registers (Xn)
+    z is a general purpose register or the stack pointer (Xn|SP)
+    imm is a signed offset multiple of 8 (-512..504)
+        ldp {x}, {y}, [{z}], #{imm}
+*/
+#define LDP_psi(x,y,z,imm) code[i++] = 0xa8c00000 | (x) | ((z) << 5) | ((y) << 10) | \
+                           ((((imm) >> 3) & 0x7f) << 15)
+
+/*
     Branch with link to a register. Calls a subroutine at an address in a
     general purpose register (Xn|XZR)
         blr {x}
