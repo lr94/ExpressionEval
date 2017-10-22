@@ -73,4 +73,6 @@ enum {X0 = 0, X1, X2, X3, X4, X5, X6, X7,
 #define BLR(x)              code[i++] = 0xd63f0000 | ((x) << 5)
 
 #define RET                 code[i++] = 0xd65f03c0
+
+#define NOP                 code[i++] = 0xd503201f
 #endif
