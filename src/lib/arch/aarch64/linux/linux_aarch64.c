@@ -23,7 +23,7 @@ typedef enum
     EIL_MOD,
 
     EIL_NEG,        // Change the sign of a number; NEG REG_1
-    EIL_CALL        // Call a function
+    EIL_CALL        // Call a function; CALL function_ptr, num_params
 } eil_opcode_t;
 union eil_operand
 {
@@ -228,7 +228,26 @@ eil_expression_t *compile_to_eil(compiler c, token first_token)
         }
         else if(t->type == TOKEN_FUNCTION)
         {
-            ERROR(ERROR_UNKNOWN, NULL); // TODO implement function calling
+            function f = parser_GetFunction(c->p, t->text);
+
+            /* this should never happen, since when a function is not defined
+               is not considered a function by the parser */
+            if(f == NULL)
+                    ERROR(ERROR_UNKNOWN, t);
+
+            if(stack_size < f->num_args)
+                ERROR(ERROR_ARGS, t);
+
+            eil_instruction_t *call = malloc(sizeof(eil_instruction_t));
+            call->opcode = EIL_CALL;
+            call->op1.mem = f->ptr;
+            call->op2.imm = f->num_args;
+            list_Append(expression->instructions, call);
+
+            /* Calling the function will pop the arguments from the stack and
+               push the result */
+            stack_size -= (f->num_args - 1);
+            // ERROR(ERROR_UNKNOWN, NULL); // TODO implement function calling
         }
     } while((t = t->next) != NULL);
 
@@ -251,23 +270,25 @@ void eil_expression_dump(eil_expression_t *expression)
         const char *vals[] = {"PUSH", "POP", "MOVLIT", "ADD", "SUB", "MUL", "DIV", "MOD", "NEG", "CALL"};
         const char *regs[] = {"REG_0", "REG_1", "REG_2", "REG_3", "REG_4", "REG_5", "REG_6", "REG_7"};
 
-        printf("\t%s %s", vals[instruction->opcode], regs[instruction->op1.reg]);
-
-        switch (instruction->opcode)
+        if(instruction->opcode == EIL_CALL)
+            printf("\t%s %p %d", vals[instruction->opcode], instruction->op1.mem, instruction->op2.imm);
+        else
         {
-            case EIL_ADD:
-            case EIL_SUB:
-            case EIL_MUL:
-            case EIL_DIV:
-            case EIL_MOD:
-                printf(" %s", regs[instruction->op2.reg]);
-                break;
-            case EIL_MOVLIT:
-                printf(" %d", instruction->op2.imm);
-                break;
-            case EIL_CALL:
-                printf(" %p", instruction->op2.mem);
-                break;
+            printf("\t%s %s", vals[instruction->opcode], regs[instruction->op1.reg]);
+
+            switch (instruction->opcode)
+            {
+                case EIL_ADD:
+                case EIL_SUB:
+                case EIL_MUL:
+                case EIL_DIV:
+                case EIL_MOD:
+                    printf(" %s", regs[instruction->op2.reg]);
+                    break;
+                case EIL_MOVLIT:
+                    printf(" %d", instruction->op2.imm);
+                    break;
+            }
         }
         printf("\n");
     }
@@ -323,6 +344,9 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                 break;
             case EIL_MOD:
                 aarch64_inst_count += 5;
+                break;
+            case EIL_CALL:
+                aarch64_inst_count += 6 + current_instruction->op2.imm + 3 * c->arg_count;
                 break;
             default:
                 aarch64_inst_count++;
@@ -413,6 +437,81 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                 // Cast to double precision floating point
                 SCVTF(current_instruction->op1.reg, X0);
                 break;
+
+            case EIL_CALL:
+            {
+                /* Now registers from d0 to d3 contain this expression arguments, so we
+                   can't modify them. Let's pop the called function args into d4-d7.
+                   current_instruction->op2.imm contains the number of arguments taken
+                   by the called function */
+                int j;
+                for(j = current_instruction->op2.imm - 1; j >= 0; j--)
+                {
+                    // ldr d{j + 4}, [sp, #{aarch64_virtual_sp}]
+                    LDR_fp_imm(D0 + 4 + j, SP, aarch64_virtual_sp);
+                    aarch64_virtual_sp += sizeof(double);
+                    aarch64_curr_inst_index++;
+                }
+
+                /* Push into the stack this expression parameters and copy into
+                   registers from d0 to d3 the called function arguments */
+                for(j = 0; j < c->arg_count; j++)
+                {
+                    // PUSH
+                    aarch64_virtual_sp -= sizeof(double);
+                    // ldr d{j}, [sp, #{aarch64_virtual_sp}]
+                    STR_fp_imm(D0 + j, SP, aarch64_virtual_sp);
+                    aarch64_curr_inst_index++;
+
+                    // fmov d{j}, d{j + 4}
+                    FMOV(D0 + j, D0 + j + 4);
+                    aarch64_curr_inst_index++;
+                }
+
+                // Add to the literal table the function address
+                union eil_literal *lit_address = malloc(sizeof(union eil_literal));
+                lit_address->ptr = current_instruction->op1.mem;
+                list_Append(expr->literals, lit_address);
+                int literal_index = expr->literals->count - 1;
+
+                // Loads the literal address in X0
+                LDR_lit(X0, (aarch64_inst_count - aarch64_curr_inst_index) * 4
+                            + literal_index * 8);
+                aarch64_curr_inst_index++;
+
+                STP_pri(X29, X30, SP, -16);
+                aarch64_curr_inst_index++;
+
+                // Procedure call
+                BLR(X0);
+                aarch64_curr_inst_index++;
+
+                LDP_psi(X29, X30, SP, 16);
+                aarch64_curr_inst_index++;
+                // NOP;
+
+                // Move the result to a temporary register
+                // fmov d6, d0
+                FMOV(D6, D0);
+                aarch64_curr_inst_index++;
+
+                // Restore this expression parameters
+                for(j = c->arg_count - 1; j >= 0; j--)
+                {
+                    // ldr d{j}, [sp, #{aarch64_virtual_sp}]
+                    LDR_fp_imm(D0 + j, SP, aarch64_virtual_sp);
+                    aarch64_virtual_sp += sizeof(double);
+                    aarch64_curr_inst_index++;
+                }
+
+                // Push the result value into the stack
+                aarch64_virtual_sp -= sizeof(double);
+                // ldr d6, [sp, #{aarch64_virtual_sp}]
+                STR_fp_imm(D6, SP, aarch64_virtual_sp);
+                aarch64_curr_inst_index++;
+
+                break;
+            }
         }
     }
 
@@ -440,9 +539,10 @@ void *compile_function_internal(compiler c, token first_token, int *size)
 
     eil_expression_destroy(expr);
 
-/*
+
     // Dump
     int j;
+    /*
     for(j = 0; j < i; j++)
         printf("%08x\n", code[j]);
     printf("\n");
@@ -452,8 +552,10 @@ void *compile_function_internal(compiler c, token first_token, int *size)
     for(j = 0; j < i * 4; j++)
         fputc(cd[j], fp);
     fclose(fp);
-*/
-
+    // exit(0);
+    // printf("cos: %p\nme:%p\n", cos, compile_function_internal);
+    */
+    
     return create_executable_code_aarch64_linux((const char*)code, i * 4);
 }
 
