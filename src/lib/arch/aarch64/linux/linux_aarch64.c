@@ -182,7 +182,7 @@ eil_expression_t *compile_to_eil(compiler c, token first_token)
                     list_Append(expression->instructions, op);
                     break;
                 default:
-                    ERROR(ERROR_UNKNOWN, NULL); // TODO implement % and ^
+                    ERROR(ERROR_UNKNOWN, NULL); // TODO implement ^
             }
 
             // PUSH REG_6
@@ -259,6 +259,7 @@ void eil_expression_dump(eil_expression_t *expression)
             case EIL_SUB:
             case EIL_MUL:
             case EIL_DIV:
+            case EIL_MOD:
                 printf(" %s", regs[instruction->op2.reg]);
                 break;
             case EIL_MOVLIT:
@@ -319,6 +320,9 @@ void *compile_function_internal(compiler c, token first_token, int *size)
             case EIL_POP:
                 current_stack_size--;
                 aarch64_inst_count++;
+                break;
+            case EIL_MOD:
+                aarch64_inst_count += 5;
                 break;
             default:
                 aarch64_inst_count++;
@@ -396,6 +400,18 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                 FNEG(current_instruction->op1.reg,
                      current_instruction->op1.reg);
                 aarch64_curr_inst_index++;
+                break;
+
+            case EIL_MOD:
+                // Cast to two 64-bit signed integers
+                FCVTZS(X0, current_instruction->op1.reg);
+                FCVTZS(X1, current_instruction->op2.reg);
+                // Divide
+                SDIV(X2, X0, X1);
+                // Find remainder
+                MSUB(X0, X2, X1, X0); // x0 = x0 - x2 * x1
+                // Cast to double precision floating point
+                SCVTF(current_instruction->op1.reg, X0);
                 break;
         }
     }
