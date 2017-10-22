@@ -354,9 +354,24 @@ void *compile_function_internal(compiler c, token first_token, int *size)
             case EIL_MOD:
                 aarch64_inst_count += 5;
                 break;
-            case EIL_CALL:
-                aarch64_inst_count += 6 + current_instruction->op2.imm + 3 * c->arg_count;
+
+            case EIL_POW:
+                aarch64_inst_count += 7 + 2 * c->arg_count;
+                current_stack_size += c->arg_count;
+                if(current_stack_size > max_stack_size)
+                    max_stack_size = current_stack_size;
+                current_stack_size -= c->arg_count;
                 break;
+            case EIL_CALL: // TODO check
+                aarch64_inst_count += 6 + current_instruction->op2.imm + 3 * c->arg_count;
+                current_stack_size = current_stack_size
+                                     - current_instruction->op2.imm
+                                     + c->arg_count;
+                if(current_stack_size > max_stack_size)
+                    max_stack_size = current_stack_size;
+                current_stack_size = current_stack_size - c->arg_count + 1;
+                break;
+
             default:
                 aarch64_inst_count++;
                 break;
@@ -447,6 +462,64 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                 SCVTF(current_instruction->op1.reg, X0);
                 break;
 
+            case EIL_POW:
+            {
+                int j;
+
+                // Push into the stack this expression parameters
+                for(j = 0; j < c->arg_count; j++)
+                {
+                    // PUSH
+                    aarch64_virtual_sp -= sizeof(double);
+                    // ldr d{j}, [sp, #{aarch64_virtual_sp}]
+                    STR_fp_imm(D0 + j, SP, aarch64_virtual_sp);
+                    aarch64_curr_inst_index++;
+                }
+
+                // Move "pow" args to d0 and d1
+                FMOV(D0, current_instruction->op1.reg);
+                FMOV(D1, current_instruction->op2.reg);
+                aarch64_curr_inst_index += 2;
+
+                // Add to the literal table "pow()" address
+                union eil_literal *lit_address = malloc(sizeof(union eil_literal));
+                lit_address->ptr = pow;
+                list_Append(expr->literals, lit_address);
+                int literal_index = expr->literals->count - 1;
+
+                // Loads the literal address in X0
+                LDR_lit(X0, (aarch64_inst_count - aarch64_curr_inst_index) * 4
+                            + literal_index * 8);
+                aarch64_curr_inst_index++;
+
+                // Store frame pointer (FP/X29) and link register (LR/X30) into the stack
+                STP_pri(X29, X30, SP, -16);
+                aarch64_curr_inst_index++;
+
+                // Procedure call
+                BLR(X0);
+                aarch64_curr_inst_index++;
+
+                // Restore frame pointer (FP/X29) and link register (LR/X30) from the stack
+                LDP_psi(X29, X30, SP, 16);
+                aarch64_curr_inst_index++;
+
+                // Move the result to the final register
+                // fmov {?}, d0
+                FMOV(current_instruction->op1.reg, D0);
+                aarch64_curr_inst_index++;
+
+                // Restore this expression parameters
+                for(j = c->arg_count - 1; j >= 0; j--)
+                {
+                    // ldr d{j}, [sp, #{aarch64_virtual_sp}]
+                    LDR_fp_imm(D0 + j, SP, aarch64_virtual_sp);
+                    aarch64_virtual_sp += sizeof(double);
+                    aarch64_curr_inst_index++;
+                }
+
+                break;
+            }
             case EIL_CALL:
             {
                 /* Now registers from d0 to d3 contain this expression arguments, so we
@@ -488,6 +561,7 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                             + literal_index * 8);
                 aarch64_curr_inst_index++;
 
+                // Store frame pointer (FP/X29) and link register (LR/X30) into the stack
                 STP_pri(X29, X30, SP, -16);
                 aarch64_curr_inst_index++;
 
@@ -495,6 +569,7 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                 BLR(X0);
                 aarch64_curr_inst_index++;
 
+                // Restore frame pointer (FP/X29) and link register (LR/X30) from the stack
                 LDP_psi(X29, X30, SP, 16);
                 aarch64_curr_inst_index++;
                 // NOP;
@@ -549,9 +624,10 @@ void *compile_function_internal(compiler c, token first_token, int *size)
     eil_expression_destroy(expr);
 
 
+    /*
     // Dump
     int j;
-    /*
+
     for(j = 0; j < i; j++)
         printf("%08x\n", code[j]);
     printf("\n");
@@ -562,6 +638,7 @@ void *compile_function_internal(compiler c, token first_token, int *size)
         fputc(cd[j], fp);
     fclose(fp);
     // exit(0);
+
     // printf("cos: %p\nme:%p\n", cos, compile_function_internal);
     */
 
