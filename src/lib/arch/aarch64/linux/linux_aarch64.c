@@ -333,6 +333,8 @@ void *compile_function_internal(compiler c, token first_token, int *size)
     // eil_expression_dump(expr);
 
     listnode_t *n;
+
+    // Calculate stack size and number of instructions in advance
     int max_stack_size = 0, current_stack_size = 0;
     int aarch64_inst_count = 0;
     for(n = expr->instructions->first; n != NULL; n = n->next)
@@ -378,9 +380,11 @@ void *compile_function_internal(compiler c, token first_token, int *size)
         }
     }
     max_stack_size *= sizeof(double); // 64 bit per stack slot
-    aarch64_inst_count += 4; // alloca stack, pop risultato, libera, ret
+    aarch64_inst_count += 4; // allocate stack, pop result, free, ret
 
-    // TODO check max_stack_size <= 4095
+    // Check that max_stack_size <= 4095
+    if(max_stack_size >= 4095)
+        ERROR(ERROR_STACKOVERFLOW, NULL);
 
     int aarch64_curr_inst_index = 0; // Current instruction index
     // Allocate space in the stack. Note that SP must be 16-byte aligned when accessing memory
@@ -572,7 +576,6 @@ void *compile_function_internal(compiler c, token first_token, int *size)
                 // Restore frame pointer (FP/X29) and link register (LR/X30) from the stack
                 LDP_psi(X29, X30, SP, 16);
                 aarch64_curr_inst_index++;
-                // NOP;
 
                 // Move the result to a temporary register
                 // fmov d6, d0
