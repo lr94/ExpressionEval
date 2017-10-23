@@ -1,6 +1,8 @@
 *.o
 *.so
 *.a
+*.Po
+*.bin
 performance_test
 test_main
 prova
@@ -10,3 +12,4 @@ config.status
 .deps
 .dirstamp
 autom4te.cache
+qemu_*

@@ -623,6 +623,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+ARCH_AARCH64_FALSE
+ARCH_AARCH64_TRUE
 ARCH_x86_64_FALSE
 ARCH_x86_64_TRUE
 ARCH_i686_FALSE
@@ -4586,7 +4588,7 @@ ARCH=$arch
 
 # Supported architectures
 
-if ! echo "i686 x86_64" | $GREP -w $arch > /dev/null; then
+if ! echo "i686 x86_64 aarch64" | $GREP -w $arch > /dev/null; then
 	as_fn_error $? "Architecture $arch is not supported" "$LINENO" 5
 fi;
 
@@ -4650,6 +4652,14 @@ fi
 else
   ARCH_x86_64_TRUE='#'
   ARCH_x86_64_FALSE=
+fi
+
+ if test "$arch" = "aarch64"; then
+  ARCH_AARCH64_TRUE=
+  ARCH_AARCH64_FALSE='#'
+else
+  ARCH_AARCH64_TRUE='#'
+  ARCH_AARCH64_FALSE=
 fi
 
 
@@ -4834,6 +4844,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_x86_64_TRUE}" && test -z "${ARCH_x86_64_FALSE}"; then
   as_fn_error $? "conditional \"ARCH_x86_64\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ARCH_AARCH64_TRUE}" && test -z "${ARCH_AARCH64_FALSE}"; then
+  as_fn_error $? "conditional \"ARCH_AARCH64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

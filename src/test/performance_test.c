@@ -11,7 +11,7 @@ double max(double a, double b) { return (a > b) ? a : b; }
 
 double test_function(double x, double y, double z, double a)
 {
-        return 1+pow(0.35*cos(1/(PI*x))+sqrt(1+pow(-y+x,2))+sqrt(1+pow(x-y,2)),3)-(2-cos(a))/(2+sin((x+y)/(max(1+x,1+y)+x*x+z*z)))-(int)(a*256*cos(x*y+4*z*z-a))%(int)(102+24.3*sin(z*z*z-x*a+y)); // || 
+        return 1+pow(0.35*cos(1/(PI*x))+sqrt(1+pow(-y+x,2))+sqrt(1+pow(x-y,2)),3)-(2-cos(a))/(2+sin((x+y)/(max(1+x,1+y)+x*x+z*z)))-(int)(a*256*cos(x*y+4*z*z-a))%(int)(102+24.3*sin(z*z*z-x*a+y)); // ||
 }
 char expr[] = "1+(0.35*cos(1/(pi*x))+sqrt(1+(-y+x)^2)+sqrt(1+(x-y)^2))^3-(2-cos(a))/(2+sin((x+y)/(max(1+x,1+y)+x^2+z^2)))-(a*256*cos(x*y+4*z^2-a))%(102+24.3*sin(z^3-x*a+y))";
 #define N       2500000
@@ -29,16 +29,16 @@ int main()
         struct timeval tv;
         int i, j;
         unsigned long long int memb = 0;
-        
+
         double s, e;
-        
+
         // Stampa informazioni iniziali
-        
+
         printf("Espressione di prova:\t\t\t");
         print_lw(expr, 48);
         printf("\n\n");
         printf("Numero di prove:\t\t\t%d\n", N);
-        
+
         // Inizializza generatore di numeri casuali
         srand((unsigned)time(NULL));
         // Alloca la memoria e genera i valori
@@ -59,8 +59,8 @@ int main()
                 struct mallinfo mi = mallinfo();
                 memb = mi.uordblks + mi.hblkhd;
         #endif
-        printf("Memoria utilizzata:\t\t\t"); print_size(memb, 1); printf(" ("); print_size(memb, 0); printf(")\n"); 
-        
+        printf("Memoria utilizzata:\t\t\t"); print_size(memb, 1); printf(" ("); print_size(memb, 0); printf(")\n");
+
         //////////// TEST INTERPRETE
         s = GET_TIME();
         parser p = parser_New();
@@ -88,15 +88,15 @@ int main()
                 parser_SetVariable(p, "y", values[i][1]);
                 parser_SetVariable(p, "z", values[i][2]);
                 parser_SetVariable(p, "a", values[i][3]);
-                
+
                 values[i][4] = expression_Eval(p, ex);
         }
         e = GET_TIME();
         expression_Free(ex);
         parser_Free(p);
         printf("%f s\n", e - s);
-        
-        
+
+
         //////////// TEST COMPILATORE JIT
         s = GET_TIME();
         // Inizializzo il compilatore
@@ -121,18 +121,18 @@ int main()
         }
         e = GET_TIME();
         printf("Tempo compilazione JIT:\t\t\t%f s\n", e - s);
-        
+
         printf("Tempo JIT:\t\t\t\t");
         fflush(stdout);
-        
+
         // A questo punto la funzione è bella che compilata e la tratto come tale
         s = GET_TIME();
         for(i = 0; i < N; i++)
-                values[i][5] = cf(values[i][0], values[i][1], values[i][2], values[i][3]); 
+                values[i][5] = cf(values[i][0], values[i][1], values[i][2], values[i][3]);
         e = GET_TIME();
         printf("%f s\n", e - s);
         compiler_Free(c);
-        
+
         //////////// TEST GCC
         printf("Tempo GCC:\t\t\t\t");
         fflush(stdout);
@@ -141,12 +141,12 @@ int main()
                 values[i][6] = test_function(values[i][0], values[i][1], values[i][2], values[i][3]);
         e = GET_TIME();
         printf("%f s\n", e - s);
-        
+
         //////////// VERIFICA DEI RISULTATI
         /*
                 In particolare su architettura x86_32 (i686) i risultati delle due funzioni compilate
                 (rispettivamente dal compilatore JIT e da GCC) potrebbero essere leggermente diversi,
-                in quanto di default su i686 GCC compila usando per i calcoli in virgola mobile le 
+                in quanto di default su i686 GCC compila usando per i calcoli in virgola mobile le
                 istruzioni del set della FPU x87, mentre su x86_64 usa di default le istruzioni del
                 set SSE (/versioni successive). Il compilatore JIT di questa libreria usa sempre
                 il set SSE2.
@@ -167,11 +167,11 @@ int main()
                 double delta = max(fabs(values[i][4] - values[i][5]), fabs(values[i][4] - values[i][6]));
                 delta = max(delta, fabs(values[i][5] - values[i][6]));
                 if(delta > max_delta)
-                {           
+                {
                         max_delta = delta;
                         max_delta_i = i;
                 }
-                
+
                 if(values[i][6]!=0.0)
                 {
                         double rel = delta / values[i][6] * 100.0;
@@ -215,12 +215,12 @@ int main()
                 printf("\t\tGCC   = %.16f\n\n", values[max_rel_i][6]);
         }
         printf("Errore relativo medio:\t\t\t%.16f %%\n", sum_rel / count_rel);
-        
+
         for(i = 0; i < N; i++)
                 free(values[i]);
         free(values);
-        
-        
+
+
         exit(EXIT_SUCCESS);
 }
 
@@ -260,5 +260,3 @@ void nomem()
         fprintf(stderr, "Errore:\n\tMemoria insufficiente.\n");
         exit(-1);
 }
-
-
