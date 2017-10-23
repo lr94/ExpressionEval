@@ -1,9 +1,10 @@
-# LibExpreval 0.9.0 (18 Ottobre 2017)
+# LibExpreval 0.9.2 (23 Ottobre 2017)
 
 ## Compatibilità
 
 La libreria al momento è compatibile (almeno per le funzionalità relative alla compilazione)
-solo con Linux su architetture x86_64 e i686 (x86_32).
+solo con Linux su architetture x86_64, i686 (x86_32) a aarch64 (ARM a 64 bit).
+Sto lavorando al supporto di Windows su x86_64.
 
 È inoltre necessario il set di istruzioni SSE2, che dovrebbe essere presente su tutti i
 processori Intel prodotti a partire dal Pentium 4. In ogni caso la libreria ne verifica la
