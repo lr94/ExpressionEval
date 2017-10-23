@@ -1,4 +1,4 @@
-AC_INIT(libexpreval, version-0.1)
+AC_INIT(libexpreval, version-0.9.2)
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_PREFIX_DEFAULT(/usr)
 AC_PROG_RANLIB
