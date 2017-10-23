@@ -68,7 +68,7 @@ int parser_SetError(parser p, int errorcode, token t)
                         else
                                 sprintf(p->errorstr, "Unknown error.");
         }
-        
+
         return errorcode;
 }
 
@@ -112,7 +112,7 @@ static variable variable_New(char *name, double value)
         v->name = strdup(name);
         v->value = value;
         v->next = NULL;
-        
+
         return v;
 }
 
@@ -217,7 +217,7 @@ static int treat_tokens(parser p, token first)
                                         if(latest == NULL)
                                                 t->op = OP_POS;
                                         else if(latest->type == TOKEN_OPERATOR && latest->op != OP_RBR)
-                                                t->op = OP_POS;        
+                                                t->op = OP_POS;
                                 }
                                 break;
                         case TOKEN_IDENTIFIER:
@@ -229,7 +229,7 @@ static int treat_tokens(parser p, token first)
                 }
                 latest = t;
         } while((t = t->next) != NULL);
-        
+
         return 0;
 }
 
@@ -244,7 +244,7 @@ token token_clone(token t)
         c->next = NULL;
         if(t->text != NULL)
                 c->text = strdup(t->text);
-                
+
         return c;
 }
 
@@ -279,26 +279,26 @@ static expression expression_parse_internal(parser p, token first)
         /* Coda uscita */
         token q_first;
         token q;
-        token current_t = first;
+        token current_token = first;
         expression expr;
         int queue_count, var_count;
-        
+
         parser_ClearError(p);
-        
+
         if(first == NULL)
                 return NULL;
-        
+
         if(treat_tokens(p, first)) /* Parentesi aggiunte solo per non far rompere -Wall -pedantic */
                 return NULL;
-        
+
         q_first = token_New(TOKEN_UNDEFINED, -1);
         q = q_first;
         var_count = queue_count = 0;
-        
+
         do
         {
-                token t = token_clone(current_t);
-                
+                token t = token_clone(current_token);
+
                 if(t->type == TOKEN_NUMBER || t->type == TOKEN_VARIABLE)
                 {
                         q->next = t;
@@ -338,7 +338,7 @@ static expression expression_parse_internal(parser p, token first)
                                         token_Free(q_first, 1);
                                         return NULL;
                                 }
-                                
+
                                 if(t->op == OP_RBR && op_stack_i > 0)
                                 {
                                         if(op_stack[op_stack_i-1]->type == TOKEN_FUNCTION) /* Il token in cima allo stack è il nome di una funzione? */
@@ -349,7 +349,7 @@ static expression expression_parse_internal(parser p, token first)
                                                 queue_count++;
                                         }
                                 }
-                                
+
                                 token_Free(t, 0);
                         }
                         else
@@ -373,8 +373,8 @@ static expression expression_parse_internal(parser p, token first)
                                 op_stack[op_stack_i++] = t; // PUSH operator nello stack
                         }
                 }
-        } while((current_t = current_t->next) != NULL);
-        
+        } while((current_token = current_token->next) != NULL);
+
         while(op_stack_i > 0)
         {
                 token o2 = op_stack[--op_stack_i]; // POP operator dallo stack
@@ -387,14 +387,14 @@ static expression expression_parse_internal(parser p, token first)
                 q->next = o2;
                 q = o2;
                 queue_count++;
-        }      
-        
+        }
+
         expr = malloc(sizeof(*expr));
         expr->first = q_first->next;
         expr->num_tokens = queue_count;
         expr->num_vars = var_count;
         token_Free(q_first, 0);
-        
+
         return expr;
 }
 
@@ -427,7 +427,7 @@ int parser_GetVariable(parser p, char *name, double *value)
                 }
                 current_var = current_var->next;
         }
-        
+
         return 0;
 }
 
@@ -435,7 +435,7 @@ int parser_GetVariable(parser p, char *name, double *value)
         Imposta il valore di una variabile.
         name indica il nome della variabile, value il valore
         che si intende assegnare.
-        
+
         Restituisce 1 in caso di successo, 0 altrimenti
 */
 int parser_SetVariable(parser p, char *name, double value)
@@ -443,10 +443,10 @@ int parser_SetVariable(parser p, char *name, double value)
         variable new_var;
         // Cerca la variabile tra quelle già definite
         variable current_var = p->first_var;
-        
+
         if(!is_valid_identifier(name))
                 return 0;
-        
+
         while(current_var != NULL)
         {
                 if(strcmp(current_var->name, name) == 0)
@@ -461,7 +461,7 @@ int parser_SetVariable(parser p, char *name, double value)
         new_var = variable_New(name, value);
         new_var->next = p->first_var;
         p->first_var = new_var;
-        
+
         return 1;
 }
 
@@ -471,14 +471,14 @@ int parser_SetVariable(parser p, char *name, double value)
 */
 function parser_GetFunction(parser p, char *name)
 {
-        function current_fun = p->first_function;        
+        function current_fun = p->first_function;
         while(current_fun != NULL)
         {
                 if(strcmp(current_fun->name, name) == 0)
                         return current_fun;
                 current_fun = current_fun->next;
         }
-        
+
         return NULL;
 }
 
@@ -498,10 +498,10 @@ int parser_RegisterFunction(parser p, char *name, void *ptr, int num_args)
 
         if(num_args > 4 || num_args < 0)
                 return 0; // Numero di argomenti non valido
-        
+
         if(!is_valid_identifier(name))
                 return 0; // Nome della funzione non valido
-        
+
         // Se la funzione è già definita la ridefinisco
         while(current_fun != NULL)
         {
@@ -517,7 +517,6 @@ int parser_RegisterFunction(parser p, char *name, void *ptr, int num_args)
         new_fun = function_New(name, ptr, num_args);
         new_fun->next = p->first_function;
         p->first_function = new_fun;
-        
+
         return 1;
 }
-
