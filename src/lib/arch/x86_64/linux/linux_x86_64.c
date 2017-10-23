@@ -310,17 +310,6 @@ static int supported_sse2()
 */
 int check_system_support(compiler c)
 {
-        /* Queste macro verificano il supporto in fase di compilazione della libreria,
-           avrei potuto infilarle più o meno ovunque ma qui mi è sembrato più
-           pertinente.
-        */
-        #ifndef __linux__
-                #warning Only Linux is supported!
-                #ifdef _WIN32
-                        #error Microsoft Windows is not supported!
-                #endif
-        #endif
-
         if(!supported_sse2())
         {
                 compiler_SetError(c, ERROR_UNSUPPORTED_SYS, NULL);
