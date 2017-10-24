@@ -1,3 +1,5 @@
+_Note: Since when I started the project I didn't plan to make it public all the comments and the documentation are written in Italian. I will eventually translate them, but I don't know when._
+
 # LibExpreval 0.9.2 (23 Ottobre 2017)
 
 ## Compatibilità
