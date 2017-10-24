@@ -154,7 +154,7 @@ int compiler_SetError(compiler c, int errorcode, token t)
             sprintf(p->errorstr, "A system error occurred while compiling");
             break;
         case ERROR_UNSUPPORTED_SYS:
-            sprintf(p->errorstr, "Your CPU does not seem to support SSE2 instruction set.");
+            sprintf(p->errorstr, "Your system is not supported.");
             break;
         default:
             if(txt != NULL)
