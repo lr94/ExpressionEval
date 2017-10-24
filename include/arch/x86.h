@@ -1,10 +1,11 @@
 /*
         Nota: In tutto il file si usano i nomi dei registri a 32 bit per indicare i registri sia a 32 che a 64 bit:
-        tranne qualche eccezione (IDIV, per esempio) 
+        tranne qualche eccezione (IDIV, per esempio)
 */
 
 #ifndef X86_H_INCLUDED
 #define X86_H_INCLUDED
+#include <stdint.h>
 
 enum {FLAG_DISP8  = 1,           // b001,        Indica che l'istruzione corrente è seguita da/contiene un indirizzo (relativo: displacement) a 8 bit
       FLAG_DISP32 = 2,           // b010         Indica che l'istruzione corrente è seguita da/contiene un indirizzo (relativo: displacement) a 32 bit
@@ -30,11 +31,11 @@ enum {FLAG_DISP8  = 1,           // b001,        Indica che l'istruzione corrent
                 [EAX+disp32]        Accesso in memoria con displacement a 1 bit         offset: 16
                 EAX                 Nessun accesso in memoria                           offset: 24
         (vale lo stesso per tutti gli altri registri, ovviamente)
-        
+
         Poi quando serve effettivamente l'ID di un registro nelle macro scrivo qualcosa come (REG % 8), per eliminare
         l'offset. Allo stesso modo posso sempre sapere se intendo EAX, [EAX], [EAX+disp8] o [EAX+disp32] dividendo per
         8: nei 4 casi viene 3, 0, 1, 2.
-        
+
         I casi _SIB_ e _disp_ sono particolari: non indicano alcun registro e vengono usati da altre macro definite sotto
         (non sono da usare manualmente ma vengono generati rispettivamente dalle macro INDEX e DISP)
                 _SIB_ indica che l'istruzione è seguita da un byte SIB che specifica bene dove vogliamo accedere in memoria
@@ -55,7 +56,7 @@ enum {_ESP_ = 4};
         x può essere un displacement a 8 o a 32 bit.
         Tutte queste macro hanno una parte consistente in comune, perciò chiamano un'ulteriore macro _REG_DISP:
         _REG_DISP esegue le seguenti operazioni:
-                -Stabilisce se il displacement sta o meno su 8 bit e setta di conseguenza i flag 
+                -Stabilisce se il displacement sta o meno su 8 bit e setta di conseguenza i flag
                  FLAG_DISP8 o FLAG_DISP32
                 -Inserisce nella variabile disp il valore del displacement (che è il suo secondo argomento)
                 -Restituisce l'indice del registro (il suo primo argomento) con l'offset di 8 o 16 come spiegato
@@ -63,7 +64,7 @@ enum {_ESP_ = 4};
                  significativi, che corrispondono appunto a FLAG_DISP8 e FLAG_DISP32:
                         flag & 3 == b01         =>     restituisce b + 8
                         flag & 3 == b10         =>     restituisce b + 16
-        
+
         DISP(x) serve invece per indicare un accesso in memoria ad un determinato indirizzo
         (per esempio [0xffe3] si scrive DISP(0xffe3)).
         Esegue le seguenti operazioni:
@@ -109,14 +110,14 @@ enum {_ESP_ = 4};
                                         101: ??? Qui penso che dipenda dai due bit del campo Mod del byte ModR/M precedente
                                         110: ESI
                                         111: EDI
-                                        
-        La macro opera settando FLAG_SIB e calcolando il byte SIB per poi usare _REG_DISP come visto in precedenza coi registri 
+
+        La macro opera settando FLAG_SIB e calcolando il byte SIB per poi usare _REG_DISP come visto in precedenza coi registri
 */
 #define INDEX(b,x,s,d)          (flag = FLAG_SIB, sib = (("\x0\x0\x1\x0\x2\x0\x0\x0\x3"[s] << 6) | (x << 3) | b), _REG_DISP(_SIB_, d)) // [b+x*s+d]
 #define _ESP_(x)                INDEX(4, NONE, 1, x)        // Aggiunto per lavorare sullo stack: [esp+x]
 #define _EBP_(x)                INDEX(5, NONE, 1, x)        // [ebp+x]
 
-// Questa serve per indicare un generico registro XMM{n}, così XMM1 si può scrivere sia come XMM1 che come XMM(1) 
+// Questa serve per indicare un generico registro XMM{n}, così XMM1 si può scrivere sia come XMM1 che come XMM(1)
 #define XMM(x)                  (24 + x % 8 )
 
 
@@ -158,7 +159,7 @@ enum {_ESP_ = 4};
                                         110: ESI
                                         111: EDI
         Quando il campo R/M è b100 (SIB) un ulteriore byte (detto byte SIB, descritto sopra) segue immediatamente il byte R/M.
-        
+
         Questa macro prima di tutto genera il byte ModR/M usando gli operatori bitwise per inserire i valori giusti
         in ogni campo:
                 y / 8   =>      Mod     (vedi descrizione delle macro usate per indicare gli operandi)
@@ -211,11 +212,11 @@ enum {_ESP_ = 4};
         A seconda del valore di is_2nd_op_mem vengono emessi i primi tre byte dell'istruzione
         (prefisso 0xf3/0x66 e opcode 0x0f 0x72 o 0x0f 0xd6), poi viene aggiunto un byte ModR/M con gli eventuali
         altri byte.
-        Poiché la macro MODRM vuole prima il registro e poi la locazione di memoria, è necessario 
+        Poiché la macro MODRM vuole prima il registro e poi la locazione di memoria, è necessario
         cambiare l'ordine dei parametri a seconda del valore di is_2nd_op_mem:
                 is_2nd_op_mem == 1     =>       MODRM(x, y);
                 is_2nd_op_mem == 0     =>       MODRM(y, x);
-        
+
 */
 #define MOVQ(x, y)                do { int is_2nd_op_mem = (y < 24); \
                                         code[i++] = is_2nd_op_mem ? 0xf3 : 0x66; \
@@ -271,10 +272,10 @@ enum {_ESP_ = 4};
         Definisce nel ciclo fittizio una variabile intera tmp_val, inizializzandola col valore immediato richiesto.
         Inserisce l'opcode 0xc7 e un byte ModR/M (modalità 0, registro r), per poi inserire i 4 byte relativi al valore immediato
         richiesto.
-        
+
         Usa due opcode diversi: se il valore immediato sta in 32 bit usa l'opcode C7, altrimenti usa l'opcode B8
 */
-#define MOV_imm(r, v)             do {  long tmp_val = ((long)v); \
+#define MOV_imm(r, v)             do {  uint64_t tmp_val = ((uint64_t)v); \
                                         _64PREFIX; \
                                         if(tmp_val >> 32) { \
                                         code[i++] = 0xb8 + r - 24; \
@@ -295,7 +296,7 @@ enum {_ESP_ = 4};
 // Aggiunto per cast int -> float
 #define CVTSI2SD(x, y)            do { code[i++] = 0xf2; \
                                         code[i++] = 0x0f; code[i++] = 0x2a; MODRM(x, y); } while(0)
-                                        
+
 // Aggiunti per operatore modulo
 #define CDQ                       do { code[i++] = 0x99; } while(0)
 #define IDIV(x)                   do { code[i++] = 0xf7; MODRM(7, x); } while(0)
